@@ -15,22 +15,21 @@
  */
 package org.wso2.carbon.kernel;
 
-import org.wso2.carbon.kernel.config.model.CarbonConfiguration;
-
 /**
- * PrivilegedCarbonRuntime represents the server runtime. This class contains setter methods to set
- * CarbonConfiguration and TenantRuntime. Only privileged code can access these setter method. CarbonRuntime class
- * simply gives a read-only access the the server runtime.
- *
- * @since 5.0.0
+ * Carbon Constants
  */
-public interface PrivilegedCarbonRuntime extends CarbonRuntime {
+public final class Constants {
+
+    public static final String CARBON_REPOSITORY = "carbon.repository";
+    public static final String CARBON_REPOSITORY_PATH_ENV = "CARBON_REPOSITORY";
+    public static final String CARBON_HOME = "carbon.home";
+    public static final String CARBON_HOME_ENV = "CARBON_HOME";
+    public static final String CARBON_CONFIG_XML = "carbon.xml";
 
     /**
-     * Accepts an instance of the CarbonConfiguration class.
-     *
-     * @param carbonConfiguration the CarbonConfiguration instance
+     * Remove default constructor and make it not available to initialize.
      */
-    public void setCarbonConfiguration(CarbonConfiguration carbonConfiguration);
-
+    private Constants() {
+        throw new AssertionError("Trying to a instantiate a constant class");
+    }
 }
