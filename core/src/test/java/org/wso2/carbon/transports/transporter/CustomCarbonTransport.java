@@ -13,6 +13,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://wso2.org/carbon/xmlns/v5.0.0",
-        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package org.wso2.carbon.internal.kernel.config.model;
+package org.wso2.carbon.transports.transporter;
+
+import org.wso2.carbon.transports.CarbonTransport;
+
+public class CustomCarbonTransport extends CarbonTransport {
+
+    public CustomCarbonTransport(String id) {
+        super(id);
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    protected void stop() {
+
+    }
+
+    @Override
+    protected void beginMaintenance() {
+
+    }
+
+    @Override
+    protected void endMaintenance() {
+
+    }
+}
