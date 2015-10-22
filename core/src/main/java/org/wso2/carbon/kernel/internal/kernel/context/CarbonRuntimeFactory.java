@@ -13,24 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel;
+package org.wso2.carbon.kernel.internal.kernel.context;
 
+import org.wso2.carbon.kernel.CarbonRuntime;
+import org.wso2.carbon.kernel.PrivilegedCarbonRuntime;
+import org.wso2.carbon.kernel.config.CarbonConfigProvider;
 import org.wso2.carbon.kernel.config.model.CarbonConfiguration;
 
 /**
- * PrivilegedCarbonRuntime represents the server runtime. This class contains setter methods to set
- * CarbonConfiguration and TenantRuntime. Only privileged code can access these setter method. CarbonRuntime class
- * simply gives a read-only access the the server runtime.
- *
- * @since 5.0.0
+ * TODO: class level comment
  */
-public interface PrivilegedCarbonRuntime extends CarbonRuntime {
+public class CarbonRuntimeFactory {
 
-    /**
-     * Accepts an instance of the CarbonConfiguration class.
-     *
-     * @param carbonConfiguration the CarbonConfiguration instance
-     */
-    public void setCarbonConfiguration(CarbonConfiguration carbonConfiguration);
+    public static CarbonRuntime createCarbonRuntime(CarbonConfigProvider carbonConfigProvider) throws Exception {
 
+        //TODO Remove hardcoded implementations.
+        CarbonConfiguration carbonConfiguration = carbonConfigProvider.getCarbonConfiguration();
+
+        PrivilegedCarbonRuntime carbonRuntime = new DefaultCarbonRuntime();
+        carbonRuntime.setCarbonConfiguration(carbonConfiguration);
+        return carbonRuntime;
+    }
 }
