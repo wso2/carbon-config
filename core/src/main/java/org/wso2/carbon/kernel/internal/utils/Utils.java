@@ -13,24 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel;
+package org.wso2.carbon.kernel.internal.utils;
 
-import org.wso2.carbon.kernel.config.model.CarbonConfiguration;
+import org.wso2.carbon.kernel.Constants;
+
+import java.nio.file.Paths;
 
 /**
- * PrivilegedCarbonRuntime represents the server runtime. This class contains setter methods to set
- * CarbonConfiguration and TenantRuntime. Only privileged code can access these setter method. CarbonRuntime class
- * simply gives a read-only access the the server runtime.
- *
- * @since 5.0.0
+ * Kernel internal utils
  */
-public interface PrivilegedCarbonRuntime extends CarbonRuntime {
+public class Utils {
 
     /**
-     * Accepts an instance of the CarbonConfiguration class.
+     * returns the carbon.xml location
      *
-     * @param carbonConfiguration the CarbonConfiguration instance
+     * @return String carbon.xml location
      */
-    public void setCarbonConfiguration(CarbonConfiguration carbonConfiguration);
+    public static String getCarbonXMLLocation() {
+        return Paths.get(org.wso2.carbon.kernel.utils.Utils.getCarbonConfigHome().toString(),
+                Constants.CARBON_CONFIG_XML).toString();
+    }
 
 }

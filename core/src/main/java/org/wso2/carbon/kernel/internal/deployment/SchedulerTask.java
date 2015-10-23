@@ -13,24 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel;
-
-import org.wso2.carbon.kernel.config.model.CarbonConfiguration;
+package org.wso2.carbon.kernel.internal.deployment;
 
 /**
- * PrivilegedCarbonRuntime represents the server runtime. This class contains setter methods to set
- * CarbonConfiguration and TenantRuntime. Only privileged code can access these setter method. CarbonRuntime class
- * simply gives a read-only access the the server runtime.
- *
- * @since 5.0.0
+ * The Scheduler Task which gets called periodically by the executor service and
+ * calls the repository scanner internally
  */
-public interface PrivilegedCarbonRuntime extends CarbonRuntime {
+public class SchedulerTask implements Runnable {
+
+    private RepositoryScanner repositoryScanner;
 
     /**
-     * Accepts an instance of the CarbonConfiguration class.
+     * This will construct the SchedulerTask with the given RepositoryScanner instance
      *
-     * @param carbonConfiguration the CarbonConfiguration instance
+     * @param repositoryScanner the repositoryScanner instance to be used with each task run
      */
-    public void setCarbonConfiguration(CarbonConfiguration carbonConfiguration);
+    public SchedulerTask(RepositoryScanner repositoryScanner) {
+        this.repositoryScanner = repositoryScanner;
+    }
 
+    public void run() {
+        repositoryScanner.scan();
+    }
 }
