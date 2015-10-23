@@ -20,6 +20,9 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.kernel.transports.transporter.CustomCarbonTransport;
 
+/**
+ * Unit tests class for org.wso2.carbon.kernel.transports.TransportManager.
+ */
 public class TransportManagerTest {
 
     private TransportManager transportManager;
@@ -39,7 +42,7 @@ public class TransportManagerTest {
     }
 
     @Test
-    public void testUnsuccessfullStartTransport() {
+    public void testUnsuccessfulStartTransport() {
         try {
             transportManager.startTransport("wrongId");
         } catch (IllegalArgumentException e) {
@@ -50,17 +53,17 @@ public class TransportManagerTest {
 
 
     @Test(dependsOnMethods = {"testUnsuccessfullStartTransport"})
-    public void testSuccessfullStartTransport() {
+    public void testSuccessfulStartTransport() {
         try {
             transportManager.startTransport("dummyId");
         } catch (IllegalArgumentException e) {
-            Assert.assertFalse(true);
+            Assert.assertTrue(false);
         }
         Assert.assertTrue(true);
     }
 
     @Test(dependsOnMethods = {"testSuccessfullStartTransport"})
-    public void testUnsuccessfullStopTransport() {
+    public void testUnsuccessfulStopTransport() {
         try {
             transportManager.stopTransport("wrongId");
         } catch (IllegalArgumentException e) {
@@ -70,7 +73,7 @@ public class TransportManagerTest {
     }
 
     @Test(dependsOnMethods = {"testUnsuccessfullStopTransport"})
-    public void testSuccessfullStopTransport() {
+    public void testSuccessfulStopTransport() {
         try {
             transportManager.stopTransport("dummyId");
         } catch (IllegalArgumentException e) {
