@@ -13,15 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel.runtime.runtime;
+package org.wso2.carbon.kernel.runtime;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.kernel.runtime.Runtime;
-import org.wso2.carbon.kernel.runtime.RuntimeState;
 
 /**
  * CustomRuntime class for used in test cases.
+ *
+ * @since 5.0.0
  */
 public class CustomRuntime implements Runtime {
     private static Log log = LogFactory.getLog(CustomRuntime.class);
