@@ -13,27 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel.internal.utils;
+package org.wso2.carbon.kernel.internal.context;
 
-import org.wso2.carbon.kernel.Constants;
-
-import java.nio.file.Paths;
+import org.wso2.carbon.kernel.config.CarbonConfigProvider;
+import org.wso2.carbon.kernel.config.model.CarbonConfiguration;
 
 /**
- * Kernel internal utils.
+ * Custom implementation for CarbonConfigProvider to be used in unit test cases.
  *
  * @since 5.0.0
  */
-public class Utils {
-
-    /**
-     * returns the carbon.xml location.
-     *
-     * @return String carbon.xml location
-     */
-    public static String getCarbonXMLLocation() {
-        return Paths.get(org.wso2.carbon.kernel.utils.Utils.getCarbonConfigHome().toString(),
-                Constants.CARBON_CONFIG_XML).toString();
+public class CarbonConfigProviderImpl implements CarbonConfigProvider {
+    @Override
+    public CarbonConfiguration getCarbonConfiguration() {
+        return new CarbonConfiguration();
     }
-
 }

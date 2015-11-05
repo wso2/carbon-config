@@ -13,27 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel.internal.utils;
+package org.wso2.carbon.kernel.internal.logging;
 
-import org.wso2.carbon.kernel.Constants;
+import org.osgi.service.cm.ConfigurationException;
+import org.osgi.service.cm.ManagedService;
 
-import java.nio.file.Paths;
+import java.util.Dictionary;
 
 /**
- * Kernel internal utils.
+ * Custom implementation of ManagedService interface for unit testing purposes.
  *
  * @since 5.0.0
  */
-public class Utils {
+public class CustomManagedService implements ManagedService {
+    @Override
+    public void updated(Dictionary<String, ?> dictionary) throws ConfigurationException {
 
-    /**
-     * returns the carbon.xml location.
-     *
-     * @return String carbon.xml location
-     */
-    public static String getCarbonXMLLocation() {
-        return Paths.get(org.wso2.carbon.kernel.utils.Utils.getCarbonConfigHome().toString(),
-                Constants.CARBON_CONFIG_XML).toString();
     }
-
 }

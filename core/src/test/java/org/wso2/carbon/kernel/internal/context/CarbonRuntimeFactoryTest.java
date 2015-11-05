@@ -13,27 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.kernel.internal.utils;
+package org.wso2.carbon.kernel.internal.context;
 
-import org.wso2.carbon.kernel.Constants;
-
-import java.nio.file.Paths;
+import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+import org.wso2.carbon.kernel.CarbonRuntime;
 
 /**
- * Kernel internal utils.
+ * Unit test class for org.wso2.carbon.kernel.internal.context.CarbonRuntimeFactory.
  *
  * @since 5.0.0
  */
-public class Utils {
+public class CarbonRuntimeFactoryTest {
+    private CarbonRuntime carbonRuntime;
 
-    /**
-     * returns the carbon.xml location.
-     *
-     * @return String carbon.xml location
-     */
-    public static String getCarbonXMLLocation() {
-        return Paths.get(org.wso2.carbon.kernel.utils.Utils.getCarbonConfigHome().toString(),
-                Constants.CARBON_CONFIG_XML).toString();
+    @BeforeTest
+    public void setup() throws Exception {
+        carbonRuntime = CarbonRuntimeFactory.createCarbonRuntime(new CarbonConfigProviderImpl());
     }
 
+    @Test
+    public void testDefaultCarbonRuntime() {
+        Assert.assertNotNull(carbonRuntime.getConfiguration());
+    }
 }
