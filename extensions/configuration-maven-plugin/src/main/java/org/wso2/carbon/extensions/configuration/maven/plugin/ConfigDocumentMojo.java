@@ -27,10 +27,10 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.kernel.annotations.Configuration;
-import org.wso2.carbon.kernel.annotations.Element;
-import org.wso2.carbon.kernel.annotations.Ignore;
-import org.wso2.carbon.kernel.annotations.processor.ConfigurationProcessor;
+import org.wso2.carbon.config.annotations.Configuration;
+import org.wso2.carbon.config.annotations.Element;
+import org.wso2.carbon.config.annotations.Ignore;
+import org.wso2.carbon.config.annotations.processor.ConfigurationProcessor;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
