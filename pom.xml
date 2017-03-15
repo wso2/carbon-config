@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -14,47 +14,203 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
         <version>5</version>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.config</groupId>
-    <artifactId>carbon-config-parent</artifactId>
-    <version>5.2.0-SNAPSHOT</version>
+    <artifactId>carbon-config</artifactId>
+    <name>Carbon Configuration Parent</name>
     <packaging>pom</packaging>
-    <name>WSO2 Carbon Configuration Parent</name>
-    <url>http://wso2.com</url>
-
+    <version>1.0.0-SNAPSHOT</version>
     <modules>
-        <module>components/org.wso2.carbon.config</module>
-        <module>components/org.wso2.carbon.config.annotations.processor.test</module>
-        <module>extensions/configuration-maven-plugin</module>
+        <module>components/org.wso2.carbon.config.configuration</module>
+        <module>features/org.wso2.carbon.config.configuration.feature</module>
+        <module>extensions/org.wso2.carbon.config.configuration.maven.plugin</module>
+        <module>tests/org.wso2.carbon.config.configuration.test</module>
+        <module>tests/org.wso2.carbon.config.configuration.test.coverage</module>
     </modules>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.carbon.config</groupId>
+                <artifactId>org.wso2.carbon.config.configuration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${org.snakeyaml.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json.wso2</groupId>
+                <artifactId>json</artifactId>
+                <version>${org.json.import.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io.wso2</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.secvault</groupId>
+                <artifactId>org.wso2.carbon.secvault.securevault</artifactId>
+                <version>${carbon.securevault.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.utils</artifactId>
+                <version>${carbon.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.easymock</groupId>
+                <artifactId>easymock</artifactId>
+                <version>${easy.mock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.ant</artifactId>
+                <version>${org.jacoco.ant.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.agent</artifactId>
+                <version>${jacoco.version}</version>
+                <classifier>runtime</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.eclipse.osgi</groupId>
+                <artifactId>org.eclipse.osgi</artifactId>
+                <version>${equinox.osgi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.eclipse.osgi</groupId>
+                <artifactId>org.eclipse.osgi.services</artifactId>
+                <version>${equinox.osgi.services.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-project</artifactId>
+                <version>${maven-project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>${maven-plugin-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-tools</groupId>
+                <artifactId>maven-plugin-annotations</artifactId>
+                <version>${maven-plugin-annotations.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-core</artifactId>
+                <version>${maven-core.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <id>default-prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-instrument</id>
+                            <goals>
+                                <goal>instrument</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-restore-instrumented-classes</id>
+                            <goals>
+                                <goal>restore-instrumented-classes</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <inherited>false</inherited>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
     <properties>
-        <!-- Dependency versions -->
-        <org.wso2.carbon.utils.version>5.2.0-SNAPSHOT</org.wso2.carbon.utils.version>
-        <org.wso2.carbon.secvault.version>5.2.0-SNAPSHOT</org.wso2.carbon.secvault.version>
-        <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
-        <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
-        <pax.logging.api.version>1.9.0</pax.logging.api.version>
+        <!-- Version ranges -->
+        <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
+        <osgi.framework.package.import.version.range>[1.8.0, 2.0.0)</osgi.framework.package.import.version.range>
+        <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
+        <carbon.utils.package.import.version.range>[5.0.0, 6.0.0)</carbon.utils.package.import.version.range>
+
+        <!-- Carbon components -->
+        <carbon.securevault.version>1.0.0-SNAPSHOT</carbon.securevault.version>
+        <carbon.securevault.version.range>[1.0.0, 2.0.0)</carbon.securevault.version.range>
+        <carbon.utils.version>5.2.0-SNAPSHOT</carbon.utils.version>
+
+        <!-- Dependencies -->
+        <slf4j.api.version>1.7.12</slf4j.api.version>
         <org.snakeyaml.version>1.17</org.snakeyaml.version>
-        <testng.version>6.9.4</testng.version>
+        <org.json.import.version>3.0.0.wso2v1</org.json.import.version>
+        <commons.io.version>2.4.0.wso2v1</commons.io.version>
+        <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
+        <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
+        <testng.version>6.9.12</testng.version>
+        <easy.mock.version>3.4</easy.mock.version>
+        <org.jacoco.ant.version>0.7.5.201505241946</org.jacoco.ant.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
-        <easymock.version>3.4</easymock.version>
-        <powermock.api.easymock.version>1.6.5</powermock.api.easymock.version>
-        <powermock.module.testng.version>1.6.5</powermock.module.testng.version>
-        <org.json.version>3.0.0.wso2v1</org.json.version>
+
+        <!-- Maven plugin versions -->
         <maven-project.version>2.2.1</maven-project.version>
         <maven-plugin-api.version>3.3.9</maven-plugin-api.version>
         <maven-plugin-annotations.version>3.4</maven-plugin-annotations.version>
         <maven-core.version>3.3.9</maven-core.version>
-        <slf4j.api.version>1.7.12</slf4j.api.version>
+        <maven-plugin-plugin.version>3.3</maven-plugin-plugin.version>
     </properties>
 </project>

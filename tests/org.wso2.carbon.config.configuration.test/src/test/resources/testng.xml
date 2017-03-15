@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ limitations under the License.
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Carbon-Kernel-Core_Test-Suite">
-    <test name="carbon-core-unit-tests" preserve-order="true" parallel="false">
+<suite name="Carbon-Configuration-Unit-Test-Suite">
+    <test name="carbon-configuration-unit-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.carbon.config.annotationprocessor.AnnotationProcessorTest"/>
+            <class name="org.wso2.carbon.config.configuration.test.annotationprocessor.AnnotationProcessorTest"/>
         </classes>
     </test>
 </suite>

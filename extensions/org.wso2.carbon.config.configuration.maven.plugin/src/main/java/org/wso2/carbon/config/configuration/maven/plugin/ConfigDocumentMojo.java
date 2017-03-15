@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.extensions.configuration.maven.plugin;
+package org.wso2.carbon.config.configuration.maven.plugin;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -27,10 +27,11 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.config.annotations.Configuration;
-import org.wso2.carbon.config.annotations.Element;
-import org.wso2.carbon.config.annotations.Ignore;
-import org.wso2.carbon.config.annotations.processor.ConfigurationProcessor;
+import org.wso2.carbon.config.configuration.ConfigConstants;
+import org.wso2.carbon.config.configuration.annotation.Configuration;
+import org.wso2.carbon.config.configuration.annotation.Element;
+import org.wso2.carbon.config.configuration.annotation.Ignore;
+import org.wso2.carbon.config.configuration.maven.plugin.exceptions.ConfigurationMavenRuntimeException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
@@ -45,20 +46,19 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
-
 
 /**
  * This class will create configuration document from bean class annotated in the project.
  * Get all configuration bean classes in the project from the resource created from ConfigurationProcessor
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 @Mojo(name = "create-doc")
 public class ConfigDocumentMojo extends AbstractMojo {
@@ -72,8 +72,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
     private static final String MANDATORY_FIELD_COMMENT = "# THIS IS A MANDATORY FIELD";
     private static final String UTF_8_CHARSET = "UTF-8";
     private static final String PLUGIN_DESCRIPTOR_KEY = "pluginDescriptor";
-    private static final String CONFIG_DIR = "config-docs";
-    private static final String LICENSE_FILE = "extensions/org.wso2.carbon.config.configuration.maven.plugin/src/main/resources/LICENSE.txt";
+    private static final String LICENSE_FILE = "LICENSE.txt";
 
     @Parameter(defaultValue = "${project}", required = true)
     private MavenProject project;
@@ -91,24 +90,10 @@ public class ConfigDocumentMojo extends AbstractMojo {
             return;
         }
 
-        List runtimeClasspathElements;
-        try {
-            runtimeClasspathElements = project.getRuntimeClasspathElements();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error while getting project classpath elements", e);
-        }
-
         PluginDescriptor descriptor = (PluginDescriptor) getPluginContext().get(PLUGIN_DESCRIPTOR_KEY);
         ClassRealm realm = descriptor.getClassRealm();
-
-        for (Object element : runtimeClasspathElements) {
-            File elementFile = new File((String) element);
-            try {
-                realm.addURL(elementFile.toURI().toURL());
-            } catch (MalformedURLException e) {
-                logger.error("Error while adding URI: " + elementFile.toURI().toString(), e);
-            }
-        }
+        addProjectToClasspath(realm);
+        addDependenciesToClasspath(realm);
 
         // process configuration bean to create configuration document
         for (String configClassName : configurationClasses) {
@@ -139,6 +124,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
     /**
      * read license header from the resource file(LICENSE.txt) and add copyright year.
+     *
      * @return license header
      */
     private String getLicenseHeader() {
@@ -160,6 +146,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
     /**
      * write configuration map to configuration file.
+     *
      * @param finalMap configuration map
      * @param filename filename with out extension.
      * @throws MojoExecutionException
@@ -171,7 +158,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
         // remove all comments key lines from the content. this was added as key of each field description in the map.
         content = content.replaceAll(COMMENT_KEY_REGEX_PATTERN, "");
         content = content.replaceAll(EMPTY_LINE_REGEX_PATTERN, "");
-        File configDir = new File(project.getBuild().getOutputDirectory(), CONFIG_DIR);
+        File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
 
         // create config directory inside project output directory to save config files
         if (!configDir.exists() && !configDir.mkdirs()) {
@@ -190,12 +177,13 @@ public class ConfigDocumentMojo extends AbstractMojo {
         // add configguration document to the project resources under config-docs/ directory.
         Resource resource = new Resource();
         resource.setDirectory(configDir.getAbsolutePath());
-        resource.setTargetPath(CONFIG_DIR);
+        resource.setTargetPath(ConfigConstants.CONFIG_DIR);
         project.addResource(resource);
     }
 
     /**
      * Read the resource file created by ConfigurationProcessor and create array of qualified names of bean classes.
+     *
      * @return Array of qualified Name of configuration beans
      * @throws MojoExecutionException
      */
@@ -204,11 +192,10 @@ public class ConfigDocumentMojo extends AbstractMojo {
         if (configclasses != null && configclasses.length != 0) {
             classList = configclasses;
         } else {
-            File configFile = new File(project.getBuild().getOutputDirectory(),
-                    ConfigurationProcessor.TEMP_CONFIG_FILE_NAME);
+            File configFile = new File(project.getBuild().getOutputDirectory(), ConfigConstants.TEMP_CONFIG_FILE_NAME);
             if (configFile.exists()) {
-                try {
-                    String content = new Scanner(configFile, UTF_8_CHARSET).useDelimiter("\\Z").next();
+                try (Scanner scanner = new Scanner(configFile, UTF_8_CHARSET)) {
+                    String content = scanner.useDelimiter("\\Z").next();
                     classList = content.split(",");
                 } catch (FileNotFoundException e) {
                     throw new MojoExecutionException("Error while reading the configuration classes file", e);
@@ -224,7 +211,8 @@ public class ConfigDocumentMojo extends AbstractMojo {
      * value : field value
      * description : field descriptions added in Element annotation. Omitting the description of composite type of an
      * array and argument type of a collection.
-     * @param configObject configuration bean object.
+     *
+     * @param configObject      configuration bean object.
      * @param enableDescription flag to enable description of the field. if true, it reads the annotated description
      *                          and add description before each field. omit the description otherwise.
      *                          This is added to omit description of composite type of an array and argument type of
@@ -339,6 +327,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
     /**
      * convert the annotated field description to comment.
+     *
      * @param description field description
      * @return comment string
      */
@@ -349,5 +338,35 @@ public class ConfigDocumentMojo extends AbstractMojo {
             builder.append("# ").append(line).append("\n");
         }
         return builder.toString();
+    }
+
+    /**
+     * Add project to the class realm.
+     *
+     * @param realm class realm
+     */
+    private void addProjectToClasspath(ClassRealm realm) {
+        try {
+            final URL url = project.getArtifact().getFile().toURI().toURL();
+            realm.addURL(url);
+        } catch (MalformedURLException e) {
+            throw new ConfigurationMavenRuntimeException("Error when adding project to the class realm", e);
+        }
+    }
+
+    /**
+     * Add dependencies to the class path.
+     *
+     * @param realm Class Realm
+     */
+    private void addDependenciesToClasspath(ClassRealm realm) {
+        for (Object artifact : project.getDependencyArtifacts()) {
+            try {
+                final URL url = ((Artifact) artifact).getFile().toURI().toURL();
+                realm.addURL(url);
+            } catch (MalformedURLException e) {
+                throw new ConfigurationMavenRuntimeException("Error when adding dependencies to the class realm", e);
+            }
+        }
     }
 }

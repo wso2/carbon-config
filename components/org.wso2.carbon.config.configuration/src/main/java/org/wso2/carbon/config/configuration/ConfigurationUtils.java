@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,41 +13,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.configprovider.utils;
+package org.wso2.carbon.config.configuration;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.utils.Constants;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
+import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Configuration internal utils.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class ConfigurationUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
-    private ConfigurationUtils() {}
+    private static final Pattern varPattern = Pattern.compile("\\$\\{([^}]*)}");
 
-    /**
-     * Returns the configuration file location.
-     *
-     * @param filename configuration filename (e.g: deployment.yaml)
-     * @return Path configuration file location
-     */
-    public static Path getConfigurationFileLocation(String filename) {
-        return org.wso2.carbon.utils.Utils.getCarbonConfigHome().resolve(filename);
+    private ConfigurationUtils() {
     }
 
     /**
@@ -73,6 +68,7 @@ public class ConfigurationUtils {
      * This method converts the yaml string to configuration map.
      * Map contains, key : yaml (root)key
      * values  : yaml string of the key
+     *
      * @param yamlString yaml string
      * @return configuration map
      */
@@ -89,13 +85,12 @@ public class ConfigurationUtils {
 
     /**
      * This method reads project properties in resource file,
-     * {@value org.wso2.carbon.utils.Constants#PROJECT_DEFAULTS_PROPERTY_FILE}
      *
      * @return project properties
      */
     public static Properties loadProjectProperties() {
         Properties properties = new Properties();
-        try (InputStream in = ConfigurationUtils.class.getClassLoader().getResourceAsStream(Constants
+        try (InputStream in = ConfigurationUtils.class.getClassLoader().getResourceAsStream(ConfigConstants
                 .PROJECT_DEFAULTS_PROPERTY_FILE)) {
             if (in != null) {
                 properties.load(in);
@@ -104,5 +99,80 @@ public class ConfigurationUtils {
             logger.error("Error while reading the project default properties, hence apply default values.", e);
         }
         return properties;
+    }
+
+    /**
+     * Replace system property holders in the property values.
+     * e.g. Replace ${carbon.home} with value of the carbon.home system property.
+     *
+     * @param value string value to substitute
+     * @return String substituted string
+     */
+    public static String substituteVariables(String value) {
+        Matcher matcher = varPattern.matcher(value);
+        boolean found = matcher.find();
+        if (!found) {
+            return value;
+        }
+        StringBuffer sb = new StringBuffer();
+        do {
+            String sysPropKey = matcher.group(1);
+            String sysPropValue = getSystemVariableValue(sysPropKey, null);
+            if (sysPropValue == null || sysPropValue.length() == 0) {
+                String msg = "System property " + sysPropKey + " is not specified";
+                logger.error(msg);
+                throw new RuntimeException(msg);
+            }
+            // Due to reported bug under CARBON-14746
+            sysPropValue = sysPropValue.replace("\\", "\\\\");
+            matcher.appendReplacement(sb, sysPropValue);
+        } while (matcher.find());
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    /**
+     * A utility which allows reading variables from the environment or System properties.
+     * If the variable in available in the environment as well as a System property, the System property takes
+     * precedence.
+     *
+     * @param variableName System/environment variable name
+     * @param defaultValue default value to be returned if the specified system variable is not specified.
+     * @return value of the system/environment variable
+     */
+    public static String getSystemVariableValue(String variableName, String defaultValue) {
+        return getSystemVariableValue(variableName, defaultValue, ConfigConstants.PlaceHolders.class);
+    }
+
+    /**
+     * A utility which allows reading variables from the environment or System properties.
+     * If the variable in available in the environment as well as a System property, the System property takes
+     * precedence.
+     *
+     * @param variableName  System/environment variable name
+     * @param defaultValue  default value to be returned if the specified system variable is not specified.
+     * @param constantClass Class from which the Predefined value should be retrieved if system variable and default
+     *                      value is not specified.
+     * @return value of the system/environment variable
+     */
+    public static String getSystemVariableValue(String variableName, String defaultValue, Class constantClass) {
+        String value = null;
+        if (System.getProperty(variableName) != null) {
+            value = System.getProperty(variableName);
+        } else if (System.getenv(variableName) != null) {
+            value = System.getenv(variableName);
+        } else {
+            try {
+                String constant = variableName.replaceAll("\\.", "_").toUpperCase(Locale.getDefault());
+                Field field = constantClass.getField(constant);
+                value = (String) field.get(constant);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                //Nothing to do
+            }
+            if (value == null) {
+                value = defaultValue;
+            }
+        }
+        return value;
     }
 }

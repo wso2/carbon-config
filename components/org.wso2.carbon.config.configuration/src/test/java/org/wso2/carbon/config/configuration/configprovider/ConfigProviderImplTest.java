@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.configprovider;
+package org.wso2.carbon.config.configuration.configprovider;
 
 import org.easymock.EasyMock;
 import org.slf4j.Logger;
@@ -22,11 +22,16 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import org.wso2.carbon.config.internal.ConfigProviderDataHolder;
-import org.wso2.carbon.config.internal.ConfigProviderImpl;
-import org.wso2.carbon.config.utils.EnvironmentUtils;
-import org.wso2.carbon.securevault.SecureVault;
-import org.wso2.carbon.securevault.exception.SecureVaultException;
+import org.wso2.carbon.config.configuration.ConfigurationException;
+import org.wso2.carbon.config.configuration.provider.ConfigProvider;
+import org.wso2.carbon.config.configuration.provider.ConfigProviderDataHolder;
+import org.wso2.carbon.config.configuration.provider.ConfigProviderImpl;
+import org.wso2.carbon.config.configuration.reader.ConfigFileReader;
+import org.wso2.carbon.config.configuration.reader.XMLBasedConfigFileReader;
+import org.wso2.carbon.config.configuration.reader.YAMLBasedConfigFileReader;
+import org.wso2.carbon.config.configuration.utils.EnvironmentUtils;
+import org.wso2.carbon.secvault.securevault.SecureVault;
+import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.utils.Constants;
 import org.yaml.snakeyaml.Yaml;
 
@@ -37,6 +42,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -47,12 +53,10 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-
-
 /**
  * This class is to demonstrate the sample uses of the ConfigProvider.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class ConfigProviderImplTest {
 
@@ -72,6 +76,7 @@ public class ConfigProviderImplTest {
         EasyMock.expect(secureVault.resolve(EasyMock.anyString())).andReturn(PASSWORD.toCharArray()).anyTimes();
         EasyMock.replay(secureVault);
     }
+
     @BeforeMethod
     private void setCarbonHome() {
         Path carbonHome = Paths.get("");
@@ -93,11 +98,25 @@ public class ConfigProviderImplTest {
         System.setProperty("pqr.secure", "true");
     }
 
+    /**
+     * Get file from resources.
+     *
+     * @param fileName name of the file
+     * @return file path
+     */
+    private Path getFilePath(String fileName) {
+        URL resourceURL = this.getClass().getClassLoader().getResource("conf");
+        if (resourceURL == null) {
+            throw new RuntimeException("Resource path not found");
+        }
+        return Paths.get(resourceURL.getPath(), fileName);
+    }
+
     @BeforeMethod
     private void clearDeploymentConfiguration() {
         try {
-            Class providerClass = Class.forName("org.wso2.carbon.config.internal.ConfigProviderImpl");
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader("Example.xml");
+            Class providerClass = Class.forName("org.wso2.carbon.config.configuration.provider.ConfigProviderImpl");
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
             Constructor<?> cons = providerClass.getConstructor(ConfigFileReader.class);
             Object providerObject = cons.newInstance(fileReader);
             Field field = providerClass.getDeclaredField("deploymentConfigs");
@@ -105,7 +124,7 @@ public class ConfigProviderImplTest {
             field.set(providerObject, null);
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException | InstantiationException |
                 NoSuchMethodException | InvocationTargetException e) {
-            logger.error(e.toString(), e);
+            logger.error("Error initiating configuration provider implementation instance", e);
         }
     }
 
@@ -143,7 +162,7 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use ${env:xyz.http.port,8888} as its port");
 
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader("Example.xml");
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
             configurations = configProvider.getConfigurationObject(Configurations.class);
 
@@ -168,7 +187,7 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(), "true");
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use 8888 as its port");
-        } catch (JAXBException | CarbonConfigurationException e) {
+        } catch (JAXBException | ConfigurationException e) {
             logger.error(e.toString(), e);
             Assert.fail();
         }
@@ -208,7 +227,7 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use ${env:xyz.http.port,8888} as its port");
 
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader("Example.xml");
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
             Map configurationMap = configProvider.getConfigurationMap("configurations");
 
@@ -237,17 +256,17 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(transport3.get("secure"), true);
             Assert.assertEquals(transport3.get("desc"),
                     "This transport will use 8888 as its port");
-        } catch (JAXBException | CarbonConfigurationException e) {
+        } catch (JAXBException | ConfigurationException e) {
             logger.error(e.toString(), e);
             Assert.fail();
         }
     }
 
-    @Test(expectedExceptions = CarbonConfigurationException.class, description = "This test will test functionality " +
+    @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when " +
             "xml config file not found")
-    public void xmlFileNotFoundTestCase() throws CarbonConfigurationException {
-        ConfigFileReader fileReader = new XMLBasedConfigFileReader("Example1.xml");
+    public void xmlFileNotFoundTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example1.xml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
         Configurations configurations = configProvider.getConfigurationObject(Configurations.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -293,7 +312,7 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigFileReader fileReader = new YAMLBasedConfigFileReader("Example.yaml");
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
             Configurations configurations = configProvider.getConfigurationObject(Configurations.class);
 
@@ -318,7 +337,7 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(), "true");
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use 8888 as its port");
-        } catch (CarbonConfigurationException e) {
+        } catch (ConfigurationException e) {
             logger.error(e.toString());
             Assert.fail();
         }
@@ -363,7 +382,7 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigFileReader fileReader = new YAMLBasedConfigFileReader("Example.yaml");
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
             Map configurationMap = configProvider.getConfigurationMap("configurations");
 
@@ -392,17 +411,16 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(transport3.get("secure"), true);
             Assert.assertEquals(transport3.get("desc"),
                     "This transport will use 8888 as its port");
-        } catch (CarbonConfigurationException e) {
+        } catch (ConfigurationException e) {
             logger.error(e.toString());
             Assert.fail();
         }
     }
 
-    @Test(expectedExceptions = CarbonConfigurationException.class, description = "This test will test functionality " +
-            "when " +
-            "yaml config file not found")
-    public void yamlFileNotFoundTestCase() throws CarbonConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader("Example1.yaml");
+    @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
+            "when yaml config file not found")
+    public void yamlFileNotFoundTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example1.yaml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
         Configurations configurations = configProvider.getConfigurationObject(Configurations.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -410,17 +428,18 @@ public class ConfigProviderImplTest {
 
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration map")
-    public void invalidYAMLConfigMapTestCase() throws CarbonConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader("invalidconfiguration.yaml");
+    public void invalidYAMLConfigMapTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
         Map configurationMap = configProvider.getConfigurationMap("configurations");
-        Assert.assertNull(configurationMap, "configurations map should be null, since no configuration found in yaml");
+        Assert.assertNull(configurationMap, "configurations map should be null, " +
+                "since no configuration found in yaml");
     }
 
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration object")
-    public void invalidYAMLConfigObjectTestCase() throws CarbonConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader("invalidconfiguration.yaml");
+    public void invalidYAMLConfigObjectTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
         Configurations configurations = configProvider.getConfigurationObject(Configurations.class);
 
@@ -435,9 +454,10 @@ public class ConfigProviderImplTest {
 
     @Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "System property.*",
             description = "This test will test functionality when configurations are not found in yaml file and " +
-            "configuration object")
-    public void yamlConfigWithoutSystemValueTestCase() throws CarbonConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader("systemconfigwithoutdefaults.yaml");
+                    "configuration object")
+    public void yamlConfigWithoutSystemValueTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader =
+                new YAMLBasedConfigFileReader(getFilePath("systemconfigwithoutdefaults.yaml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
         Configurations configurations = configProvider.getConfigurationObject(Configurations.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -446,8 +466,9 @@ public class ConfigProviderImplTest {
     @Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = "Environment variable.*",
             description = "This test will test functionality when configurations are not found in yaml file and " +
                     "configuration object")
-    public void yamlConfigWithoutEnvValueTestCase() throws CarbonConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader("envconfigwithoutdefaults.yaml");
+    public void yamlConfigWithoutEnvValueTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader =
+                new YAMLBasedConfigFileReader(getFilePath("envconfigwithoutdefaults.yaml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader);
         Configurations configurations = configProvider.getConfigurationObject(Configurations.class);
         Assert.assertNull(configurations, "configurations object should be null");

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.annotationprocessor;
+package org.wso2.carbon.config.configuration.test.annotationprocessor;
 
 import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.config.configuration.ConfigConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,7 +43,7 @@ import static org.testng.AssertJUnit.assertEquals;
 /**
  * Tests the annotation processor logic in carbon core/annotations.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class AnnotationProcessorTest {
 
@@ -59,25 +60,25 @@ public class AnnotationProcessorTest {
         //configure the diagnostics collector.
         collector = new DiagnosticCollector<>();
         fileManager = compiler.getStandardFileManager(collector, Locale.US, Charset.forName("UTF-8"));
-        packagePath = Paths.get("src", "test", "java", "org", "wso2", "carbon", "config", "annotationprocessor")
-                .toString();
-        classesToCompile =  new String[] {
-                    Paths.get(packagePath, "Configurations.java").toString()};
+        packagePath = Paths.get("src", "test", "java", "org", "wso2", "carbon", "config", "configuration",
+                "test", "annotationprocessor").toString();
+        classesToCompile = new String[]{
+                Paths.get(packagePath, "Configurations.java").toString()};
     }
 
     @Test
     public void testCompilation() {
-            try (ByteArrayOutputStream stdoutStream = new ByteArrayOutputStream();
-            OutputStreamWriter stdout = new OutputStreamWriter(stdoutStream)) {
-                JavaCompiler.CompilationTask task = compiler.getTask(stdout, fileManager, collector, null, null,
-                        fileManager.getJavaFileObjects(classesToCompile));
-                Boolean result = task.call();
-                //perform the verifications.
-                verifyCompilationErrors(collector.getDiagnostics(), result);
-                verifyTempConfigFile();
-            } catch (IOException e) {
-                Assert.fail("error while creating output stream.", e);
-            }
+        try (ByteArrayOutputStream stdoutStream = new ByteArrayOutputStream();
+             OutputStreamWriter stdout = new OutputStreamWriter(stdoutStream)) {
+            JavaCompiler.CompilationTask task = compiler.getTask(stdout, fileManager, collector, null, null,
+                    fileManager.getJavaFileObjects(classesToCompile));
+            Boolean result = task.call();
+            //perform the verifications.
+            verifyCompilationErrors(collector.getDiagnostics(), result);
+            verifyTempConfigFile();
+        } catch (IOException e) {
+            Assert.fail("error while creating output stream.", e);
+        }
     }
 
     private void verifyCompilationErrors(List<Diagnostic<? extends JavaFileObject>> diagnostics, Boolean result) {
@@ -92,18 +93,18 @@ public class AnnotationProcessorTest {
     }
 
     private void verifyTempConfigFile() {
-        File file = Paths.get(System.getProperty("user.dir"), "temp_config_classnames.txt").toFile();
+        File file = Paths.get(System.getProperty("user.dir"), ConfigConstants.TEMP_CONFIG_FILE_NAME).toFile();
         try {
             List<String> lines = FileUtils.readLines(file, Charset.forName("UTF-8"));
             Assert.assertFalse(lines.isEmpty(), "temp config classes file cannot be empty");
 
             boolean classFound = false;
             for (String line : lines) {
-                if (line.contains("org.wso2.carbon.config.annotationprocessor.Configurations")) {
+                if (line.contains("Configurations")) {
                     classFound = true;
                 }
             }
-            Assert.assertTrue(classFound, "expected configuration class does not exist");
+            Assert.assertTrue(classFound, "expected configuration class doesnot exists");
         } catch (IOException e) {
             Assert.fail("error while reading temp file.", e);
         }
@@ -111,7 +112,7 @@ public class AnnotationProcessorTest {
 
     @AfterClass
     public void cleanOutputs() throws IOException {
-        File file = Paths.get(System.getProperty("user.dir"), "temp_config_classnames.txt").toFile();
+        File file = Paths.get(System.getProperty("user.dir"), ConfigConstants.TEMP_CONFIG_FILE_NAME).toFile();
         FileUtils.forceDeleteOnExit(file);
         File classFile = Paths.get(System.getProperty("user.dir"), packagePath, "Configurations.class").toFile();
         FileUtils.forceDeleteOnExit(classFile);

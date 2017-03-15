@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,10 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.annotations.processor;
+package org.wso2.carbon.config.configuration;
 
-
-import org.wso2.carbon.config.annotations.Configuration;
+import org.wso2.carbon.config.configuration.annotation.Configuration;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -36,13 +35,11 @@ import javax.tools.StandardLocation;
  * Configuration annotation processor extending AbstractProcessor.
  * Reads all classes annotated Configuration
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
-@SupportedAnnotationTypes("org.wso2.carbon.config.annotations.Configuration")
+@SupportedAnnotationTypes("org.wso2.carbon.config.configuration.annotation.Configuration")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ConfigurationProcessor extends AbstractProcessor {
-
-    public static final String TEMP_CONFIG_FILE_NAME = "temp_config_classnames.txt";
 
     public ConfigurationProcessor() {
         super();
@@ -57,18 +54,18 @@ public class ConfigurationProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<Element> configSet = (Set<Element>) roundEnv.getElementsAnnotatedWith(Configuration.class);
+        Set<? extends Element> configSet = roundEnv.getElementsAnnotatedWith(Configuration.class);
         StringBuilder builder = new StringBuilder();
         for (Element element : configSet) {
             Configuration configuration = element.getAnnotation(Configuration.class);
-            if (configuration != null && !Configuration.NULL.equals(configuration.namespace())) {
+            if (configuration != null && !ConfigConstants.NULL.equals(configuration.namespace())) {
                 builder.append(((TypeElement) element).getQualifiedName()).append(",");
             }
         }
         if (builder.length() > 0) {
             try {
                 FileObject file = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "",
-                        TEMP_CONFIG_FILE_NAME);
+                        ConfigConstants.TEMP_CONFIG_FILE_NAME);
                 try (Writer writer = file.openWriter()) {
                     writer.write(builder.toString());
                 }

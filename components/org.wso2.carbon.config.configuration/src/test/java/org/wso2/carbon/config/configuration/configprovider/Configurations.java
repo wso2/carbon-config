@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,17 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.configprovider;
+package org.wso2.carbon.config.configuration.configprovider;
 
-import org.wso2.carbon.config.annotations.Configuration;
+import org.wso2.carbon.config.configuration.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Sample configuration class for testing purposes.
+ *
+ * @since 1.0.0
+ */
 @XmlRootElement
 @Configuration(description = "Test Transport Bean")
 class Transport {
@@ -80,6 +84,11 @@ class Transport {
     }
 }
 
+/**
+ * Sample configuration class for testing purposes.
+ *
+ * @since 1.0.0
+ */
 @XmlRootElement
 @Configuration(description = "Test Transports Bean")
 class Transports {
@@ -90,6 +99,7 @@ class Transports {
         transport = new ArrayList<>();
         transport.add(new Transport());
     }
+
     @XmlElement
     public void setTransport(List<Transport> transport) {
         this.transport = transport;
@@ -102,7 +112,9 @@ class Transports {
 }
 
 /**
- * @since 5.2.0.
+ * Sample configuration class for testing purposes.
+ *
+ * @since 1.0.0
  */
 @XmlRootElement
 @Configuration(namespace = "configurations", description = "Test Configurations Bean")
