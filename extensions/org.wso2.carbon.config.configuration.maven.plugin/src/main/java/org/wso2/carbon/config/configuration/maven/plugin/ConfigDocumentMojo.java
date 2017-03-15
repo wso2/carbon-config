@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -79,6 +80,16 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
     @Parameter(property = "configclasses")
     protected String[] configclasses;
+
+    /**
+     * Enum containing project artifact types.
+     * This enum is used when adding project to the class path during plugin execution.
+     * Only the specified types will be added to the class path. Other type will not be added
+     */
+    private enum ProjectArtifactTypes {
+        JAR,
+        BUNDLE
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -346,11 +357,14 @@ public class ConfigDocumentMojo extends AbstractMojo {
      * @param realm class realm
      */
     private void addProjectToClasspath(ClassRealm realm) {
-        try {
-            final URL url = project.getArtifact().getFile().toURI().toURL();
-            realm.addURL(url);
-        } catch (MalformedURLException e) {
-            throw new ConfigurationMavenRuntimeException("Error when adding project to the class realm", e);
+        if (Arrays.stream(ProjectArtifactTypes.values()).anyMatch(type -> type.name().equalsIgnoreCase(project
+                .getArtifact().getType()))) {
+            try {
+                final URL url = project.getArtifact().getFile().toURI().toURL();
+                realm.addURL(url);
+            } catch (MalformedURLException e) {
+                throw new ConfigurationMavenRuntimeException("Error when adding project to the class realm", e);
+            }
         }
     }
 
