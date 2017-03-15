@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,20 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.internal;
+package org.wso2.carbon.config.configuration.provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.config.annotations.Configuration;
-import org.wso2.carbon.config.configprovider.CarbonConfigurationException;
-import org.wso2.carbon.config.configprovider.ConfigFileReader;
-import org.wso2.carbon.config.configprovider.ConfigProvider;
-import org.wso2.carbon.securevault.exception.SecureVaultException;
+import org.wso2.carbon.config.configuration.ConfigConstants;
+import org.wso2.carbon.config.configuration.ConfigurationException;
+import org.wso2.carbon.config.configuration.ConfigurationRuntimeException;
+import org.wso2.carbon.config.configuration.ConfigurationUtils;
+import org.wso2.carbon.config.configuration.annotation.Configuration;
+import org.wso2.carbon.config.configuration.reader.ConfigFileReader;
+import org.wso2.carbon.secvault.securevault.SecureVault;
+import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,12 +39,12 @@ import java.util.regex.Pattern;
  * This impl class provide the ability to override configurations in various components using a single file which has
  * the name {@link ConfigProviderImpl}.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class ConfigProviderImpl implements ConfigProvider {
     private static final Logger logger = LoggerFactory.getLogger(ConfigProviderImpl.class.getName());
 
-    private static volatile Map<String, String>  deploymentConfigs = null;
+    private static volatile Map<String, String> deploymentConfigs = null;
     //This regex is used to identify placeholders
     private static final String PLACEHOLDER_REGEX;
     //This is used to match placeholders
@@ -59,9 +63,11 @@ public class ConfigProviderImpl implements ConfigProvider {
     private enum Placeholder {
         SYS("sys"), ENV("env"), SEC("sec");
         private String value;
+
         Placeholder(String value) {
             this.value = value;
         }
+
         public String getValue() {
             return value;
         }
@@ -72,12 +78,12 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     @Override
-    public <T> T getConfigurationObject(Class<T> configClass) throws CarbonConfigurationException {
+    public <T> T getConfigurationObject(Class<T> configClass) throws ConfigurationException {
         //get configuration namespace from the class annotation
         String namespace = null;
         if (configClass.isAnnotationPresent(Configuration.class)) {
             Configuration configuration = configClass.getAnnotation(Configuration.class);
-            if (!Configuration.NULL.equals(configuration.namespace())) {
+            if (!ConfigConstants.NULL.equals(configuration.namespace())) {
                 namespace = configuration.namespace();
             }
         }
@@ -91,9 +97,7 @@ public class ConfigProviderImpl implements ConfigProvider {
                         yamlConfigString);
             }
             String yamlProcessedString = processPlaceholder(yamlConfigString);
-
-            // TODO: Move substituteVariables() method to carbon config and remove carbon.utils dependency
-            yamlProcessedString = org.wso2.carbon.utils.Utils.substituteVariables(yamlProcessedString);
+            yamlProcessedString = ConfigurationUtils.substituteVariables(yamlProcessedString);
             Yaml yaml = new Yaml(new CustomClassLoaderConstructor(configClass, configClass.getClassLoader()));
             yaml.setBeanAccess(BeanAccess.FIELD);
             return yaml.loadAs(yamlProcessedString, configClass);
@@ -105,26 +109,26 @@ public class ConfigProviderImpl implements ConfigProvider {
             try {
                 return configClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new CarbonConfigurationException("Error while creating configuration instance: "
+                throw new ConfigurationException("Error while creating configuration instance: "
                         + configClass.getSimpleName(), e);
             }
         }
     }
 
     @Override
-    public Map getConfigurationMap(String namespace) throws CarbonConfigurationException {
+    public Map getConfigurationMap(String namespace) throws ConfigurationException {
         // lazy loading deployment.yaml configuration, if it is not exists
         loadDeploymentConfiguration(configFileReader);
         // check for json configuration from deployment configs of namespace.
         if (deploymentConfigs.containsKey(namespace)) {
             String configString = deploymentConfigs.get(namespace);
             String processedString = processPlaceholder(configString);
-            processedString = org.wso2.carbon.utils.Utils.substituteVariables(processedString);
+            processedString = ConfigurationUtils.substituteVariables(processedString);
             Yaml yaml = new Yaml();
             return yaml.loadAs(processedString, Map.class);
         }
-        logger.error("configuration doesn't exist for the namespace: " + namespace + " in deployment yaml. Hence " +
-                "return null object");
+        logger.error("configuration doesn't exist for the namespace: {} in deployment yaml   . Hence " +
+                "return null object", namespace);
         return null;
     }
 
@@ -133,7 +137,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      * This method loads deployment configs in deployment.yaml.
      * loads only if deployment configuration not exists
      */
-    private void loadDeploymentConfiguration(ConfigFileReader configFileReader) throws CarbonConfigurationException {
+    private void loadDeploymentConfiguration(ConfigFileReader configFileReader) throws ConfigurationException {
         if (deploymentConfigs == null) {
             synchronized (this) {
                 if (deploymentConfigs == null) {
@@ -186,21 +190,22 @@ public class ConfigProviderImpl implements ConfigProvider {
                     break;
                 case "sec":
                     try {
-                        if (ConfigProviderDataHolder.getInstance().getSecureVault() != null) {
-                            String newValue = new String(ConfigProviderDataHolder.getInstance().getSecureVault()
-                                    .resolve(value));
+                        Optional<SecureVault> optionalSecureVault = ConfigProviderDataHolder.getInstance()
+                                .getSecureVault();
+                        if (optionalSecureVault.isPresent()) {
+                            String newValue = new String(optionalSecureVault.get().resolve(value));
                             inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
                         } else {
-                            throw new RuntimeException("Secure Vault service is not available");
+                            throw new ConfigurationRuntimeException("Secure Vault service is not available");
                         }
                     } catch (SecureVaultException e) {
-                        throw new RuntimeException("Unable to resolve the given alias", e);
+                        throw new ConfigurationRuntimeException("Unable to resolve the given alias", e);
                     }
                     break;
                 default:
                     String msg = String.format("Unsupported placeholder: %s", key);
                     logger.error(msg);
-                    throw new RuntimeException(msg);
+                    throw new ConfigurationRuntimeException(msg);
             }
         }
         return inputString;
@@ -240,6 +245,6 @@ public class ConfigProviderImpl implements ConfigProvider {
             msg = String.format("Unsupported placeholder type: %s", type.getValue());
         }
         logger.error(msg);
-        throw new RuntimeException(msg);
+        throw new ConfigurationRuntimeException(msg);
     }
 }
