@@ -127,8 +127,10 @@
         </resources>
     </build>
     <properties>
+        <private.package>org.wso2.carbon.config.configuration.internal.*</private.package>
         <export.package>
-            org.wso2.carbon.config.configuration.*
+            !org.wso2.carbon.config.configuration.internal.*,
+            org.wso2.carbon.config.configuration.*;version="${carbon.config.package.export.version}"
         </export.package>
         <import.package>
             org.wso2.carbon.utils.*;version="${carbon.utils.package.import.version.range}",

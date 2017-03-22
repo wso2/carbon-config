@@ -63,7 +63,7 @@ public class AnnotationProcessorTest {
         packagePath = Paths.get("src", "test", "java", "org", "wso2", "carbon", "config", "configuration",
                 "test", "annotationprocessor").toString();
         classesToCompile = new String[]{
-                Paths.get(packagePath, "Configurations.java").toString()};
+                Paths.get(packagePath, "TestConfiguration.java").toString()};
     }
 
     @Test
@@ -100,7 +100,7 @@ public class AnnotationProcessorTest {
 
             boolean classFound = false;
             for (String line : lines) {
-                if (line.contains("Configurations")) {
+                if (line.contains("TestConfiguration")) {
                     classFound = true;
                 }
             }
@@ -114,7 +114,7 @@ public class AnnotationProcessorTest {
     public void cleanOutputs() throws IOException {
         File file = Paths.get(System.getProperty("user.dir"), ConfigConstants.TEMP_CONFIG_FILE_NAME).toFile();
         FileUtils.forceDeleteOnExit(file);
-        File classFile = Paths.get(System.getProperty("user.dir"), packagePath, "Configurations.class").toFile();
+        File classFile = Paths.get(System.getProperty("user.dir"), packagePath, "TestConfiguration.class").toFile();
         FileUtils.forceDeleteOnExit(classFile);
         classFile = Paths.get(System.getProperty("user.dir"), packagePath, "Transport.class").toFile();
         FileUtils.forceDeleteOnExit(classFile);

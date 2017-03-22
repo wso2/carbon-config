@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.config.configuration;
+package org.wso2.carbon.config.configuration.internal;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -26,8 +26,8 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.config.configuration.ConfigConstants;
 import org.wso2.carbon.config.configuration.provider.ConfigProvider;
-import org.wso2.carbon.config.configuration.provider.ConfigProviderDataHolder;
 import org.wso2.carbon.config.configuration.provider.ConfigProviderImpl;
 import org.wso2.carbon.config.configuration.reader.ConfigFileReader;
 import org.wso2.carbon.config.configuration.reader.YAMLBasedConfigFileReader;
@@ -51,14 +51,12 @@ public class ConfigProviderComponent {
 
     @Activate
     protected void activate(BundleContext bundleContext) {
-        ConfigProviderDataHolder.getInstance().setBundleContext(bundleContext);
-        initializeConfigProvider();
+        initializeConfigProvider(bundleContext);
         logger.debug("Carbon Configuration Component activated");
     }
 
     @Deactivate
     protected void deactivate(BundleContext bundleContext) {
-        ConfigProviderDataHolder.getInstance().setBundleContext(null);
         logger.debug("Stopping ConfigProviderComponent");
     }
 
@@ -79,16 +77,16 @@ public class ConfigProviderComponent {
 
     /**
      * Initialise carbon config provider.
+     *
+     * @param bundleContext OSGi Bundle Context
      */
-    private void initializeConfigProvider() {
+    private void initializeConfigProvider(BundleContext bundleContext) {
         // TODO: Support getting configProviderImpl in non-OSGi mode
         Path deploymentConfigPath = Paths.get(Utils.getCarbonConfigHome().toString(),
                 ConfigConstants.DEPLOYMENT_CONFIG_YAML);
         ConfigFileReader configFileReader = new YAMLBasedConfigFileReader(deploymentConfigPath);
         ConfigProvider configProvider = new ConfigProviderImpl(configFileReader);
-        ConfigProviderDataHolder.getInstance().getBundleContext()
-                .ifPresent(bundleContext -> bundleContext
-                        .registerService(ConfigProvider.class, configProvider, null));
+        bundleContext.registerService(ConfigProvider.class, configProvider, null);
         logger.debug("ConfigProvider OSGi service registered");
     }
 }
