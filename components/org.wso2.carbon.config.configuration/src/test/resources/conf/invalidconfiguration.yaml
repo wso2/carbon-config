@@ -1,4 +1,4 @@
-configurations1:
+testconfiguration1:
   tenant: tenant
   transports:
     transport:        #Transport with direct values

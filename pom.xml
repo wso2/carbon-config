@@ -34,6 +34,8 @@
         <module>extensions/org.wso2.carbon.config.configuration.maven.plugin</module>
         <module>tests/org.wso2.carbon.config.configuration.test</module>
         <module>tests/org.wso2.carbon.config.configuration.test.coverage</module>
+        <module>samples/org.wso2.carbon.config.configuration.samples.standalone</module>
+        <module>samples/org.wso2.carbon.config.configuration.samples.osgi</module>
     </modules>
     <dependencyManagement>
         <dependencies>

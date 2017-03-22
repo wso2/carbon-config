@@ -19,7 +19,6 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.config.configuration.utils.EnvironmentUtils;
-import org.wso2.carbon.utils.Constants;
 
 /**
  * This class tests the functionality of ConfigurationUtils class
@@ -28,56 +27,58 @@ import org.wso2.carbon.utils.Constants;
  */
 public class UtilsTest {
 
+    private static final String UTIL_ENV_TEST_VARIABLE = "util.test";
+
     @Test
     public void testSubstituteVarsSystemPropertyNotNull() {
-        String carbonHome = System.getProperty(Constants.CARBON_HOME);
-        boolean isCarbonHomeChanged = false;
+        String testVariable = System.getProperty(UTIL_ENV_TEST_VARIABLE);
+        boolean isTestVariableChanged = false;
 
-        if (carbonHome == null) {
-            carbonHome = "test-carbon-home";
-            System.setProperty(Constants.CARBON_HOME, carbonHome);
-            isCarbonHomeChanged = true;
+        if (testVariable == null) {
+            testVariable = "utils-test-variable";
+            System.setProperty(UTIL_ENV_TEST_VARIABLE, testVariable);
+            isTestVariableChanged = true;
         }
 
-        Assert.assertEquals(ConfigurationUtils.substituteVariables("${carbon.home}"), carbonHome);
+        Assert.assertEquals(ConfigurationUtils.substituteVariables("${util.test}"), testVariable);
 
-        if (isCarbonHomeChanged) {
-            System.clearProperty(Constants.CARBON_HOME);
+        if (isTestVariableChanged) {
+            System.clearProperty(UTIL_ENV_TEST_VARIABLE);
         }
     }
 
     @Test
     public void testValueSubstituteVariables() {
-        String carbonHome = System.getProperty(Constants.CARBON_HOME);
-        boolean isCarbonHomeChanged = false;
+        String testVariable = System.getProperty(UTIL_ENV_TEST_VARIABLE);
+        boolean isTestVariableChanged = false;
 
-        if (carbonHome == null) {
-            carbonHome = "test-carbon-home";
-            System.setProperty(Constants.CARBON_HOME, carbonHome);
-            isCarbonHomeChanged = true;
+        if (testVariable == null) {
+            testVariable = "utils-test-variable";
+            System.setProperty(UTIL_ENV_TEST_VARIABLE, testVariable);
+            isTestVariableChanged = true;
         }
 
         Assert.assertEquals(ConfigurationUtils.substituteVariables("ValueNotExist"), "ValueNotExist");
-        if (isCarbonHomeChanged) {
-            System.clearProperty(Constants.CARBON_HOME);
+        if (isTestVariableChanged) {
+            System.clearProperty(UTIL_ENV_TEST_VARIABLE);
         }
     }
 
     @Test(expectedExceptions = RuntimeException.class)
     public void testSubstituteVarsSystemPropertyIsNull() {
-        String carbonHome = System.getProperty(Constants.CARBON_HOME);
-        boolean isCarbonHomeChanged = false;
+        String testVariable = System.getProperty(UTIL_ENV_TEST_VARIABLE);
+        boolean isTestVariableChanged = false;
 
-        if (carbonHome != null) {
-            System.clearProperty(Constants.CARBON_HOME);
-            isCarbonHomeChanged = true;
+        if (testVariable != null) {
+            System.clearProperty(UTIL_ENV_TEST_VARIABLE);
+            isTestVariableChanged = true;
         }
 
         try {
-            ConfigurationUtils.substituteVariables("${carbon.home}");
+            ConfigurationUtils.substituteVariables("${util.test}");
         } finally {
-            if (isCarbonHomeChanged) {
-                System.setProperty(Constants.CARBON_HOME, carbonHome);
+            if (isTestVariableChanged) {
+                System.setProperty(UTIL_ENV_TEST_VARIABLE, testVariable);
             }
         }
     }
@@ -86,7 +87,7 @@ public class UtilsTest {
     public void testSetGetSystemVariableValue() {
         // Set system variables
         EnvironmentUtils.setEnv("testEnvironmentVariable", "EnvironmentVariable");
-        EnvironmentUtils.setEnv("server.key", "carbon-kernel");
+        EnvironmentUtils.setEnv("server.key", "test-server");
         // Get system variables
         Assert.assertEquals(ConfigurationUtils.getSystemVariableValue("testEnvironmentVariable",
                 null), "EnvironmentVariable");
@@ -95,7 +96,7 @@ public class UtilsTest {
                 null);
         Assert.assertEquals(ConfigurationUtils.getSystemVariableValue("server.key",
                 null, ConfigConstants.PlaceHolders.class),
-                "carbon-kernel");
+                "test-server");
     }
 
     @DataProvider(name = "paths")
@@ -105,10 +106,10 @@ public class UtilsTest {
     }
 
     @Test(dataProvider = "paths")
-    public void testPathSubstitution(String carbonHome, String pathSeparator) {
-        System.setProperty(Constants.CARBON_HOME, carbonHome);
-        String config = "${" + Constants.CARBON_HOME + "}" + pathSeparator + "deployment" + pathSeparator;
+    public void testPathSubstitution(String path, String pathSeparator) {
+        System.setProperty(UTIL_ENV_TEST_VARIABLE, path);
+        String config = "${" + UTIL_ENV_TEST_VARIABLE + "}" + pathSeparator + "deployment" + pathSeparator;
         Assert.assertEquals(ConfigurationUtils.substituteVariables(config),
-                carbonHome + pathSeparator + "deployment" + pathSeparator);
+                path + pathSeparator + "deployment" + pathSeparator);
     }
 }

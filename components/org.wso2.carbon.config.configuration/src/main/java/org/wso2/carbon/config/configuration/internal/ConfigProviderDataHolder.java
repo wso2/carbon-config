@@ -13,9 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.configuration.provider;
+package org.wso2.carbon.config.configuration.internal;
 
-import org.osgi.framework.BundleContext;
 import org.wso2.carbon.secvault.securevault.SecureVault;
 
 import java.util.Optional;
@@ -28,7 +27,6 @@ import java.util.Optional;
 public class ConfigProviderDataHolder {
     private static ConfigProviderDataHolder instance = new ConfigProviderDataHolder();
     private Optional<SecureVault> optionalSecureVault = Optional.empty();
-    private Optional<BundleContext> bundleContext = Optional.empty();
 
     public static ConfigProviderDataHolder getInstance() {
         return instance;
@@ -43,13 +41,5 @@ public class ConfigProviderDataHolder {
 
     public void setSecureVault(SecureVault secureVault) {
         this.optionalSecureVault = Optional.ofNullable(secureVault);
-    }
-
-    public Optional<BundleContext> getBundleContext() {
-        return bundleContext;
-    }
-
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = Optional.ofNullable(bundleContext);
     }
 }

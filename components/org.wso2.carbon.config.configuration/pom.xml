@@ -127,7 +127,9 @@
         </resources>
     </build>
     <properties>
+        <private.package>org.wso2.carbon.config.configuration.internal.*</private.package>
         <export.package>
+            !org.wso2.carbon.config.configuration.internal.*,
             org.wso2.carbon.config.configuration.*
         </export.package>
         <import.package>
