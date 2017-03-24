@@ -1,4 +1,4 @@
-# Global Configuration Model
+# Carbon Configuration
 
 Carbon configuration provides a framework for managing server configurations. With global configuration model, server
  will have only one configuration file for all server configurations. So that,
