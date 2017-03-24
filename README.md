@@ -1,4 +1,4 @@
-# Global configuration model
+# Global Configuration Model
 
 Carbon configuration provides a framework for managing server configurations. With global configuration model, server
  will have only one configuration file for all server configurations. So that,
@@ -82,4 +82,4 @@ are read configuration from the file.
 
 For more information, Please refer document link below.
 
-* [Using the Global Configuration Model](docs/DeveloperTools/UpdatingConfigurations.md)
+* [Using the Global Configuration Model](docs/UpdatingConfigurations.md)
