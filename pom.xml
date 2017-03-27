@@ -200,12 +200,15 @@
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <osgi.framework.package.import.version.range>[1.8.0, 2.0.0)</osgi.framework.package.import.version.range>
         <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
-        <carbon.utils.package.import.version.range>[5.0.0, 6.0.0)</carbon.utils.package.import.version.range>
+
+        <!-- Carbon Secure Vault version -->
+        <carbon.config.package.export.version>1.0.0</carbon.config.package.export.version>
 
         <!-- Carbon components -->
-        <carbon.securevault.version>1.0.0-SNAPSHOT</carbon.securevault.version>
-        <carbon.securevault.version.range>[1.0.0, 2.0.0)</carbon.securevault.version.range>
+        <carbon.securevault.version>5.0.0-SNAPSHOT</carbon.securevault.version>
+        <carbon.securevault.version.range>[5.0.0, 6.0.0)</carbon.securevault.version.range>
         <carbon.utils.version>5.2.0-SNAPSHOT</carbon.utils.version>
+        <carbon.utils.package.import.version.range>[5.0.0, 6.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>

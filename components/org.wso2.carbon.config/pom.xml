@@ -130,7 +130,7 @@
         <private.package>org.wso2.carbon.config.internal.*</private.package>
         <export.package>
             !org.wso2.carbon.config.internal.*,
-            org.wso2.carbon.config.*
+            org.wso2.carbon.config.*;version="${carbon.config.package.export.version}"
         </export.package>
         <import.package>
             org.wso2.carbon.utils.*;version="${carbon.utils.package.import.version.range}",

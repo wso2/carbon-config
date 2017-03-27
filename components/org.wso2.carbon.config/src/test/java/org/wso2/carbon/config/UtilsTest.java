@@ -27,50 +27,50 @@ import org.wso2.carbon.config.utils.EnvironmentUtils;
  */
 public class UtilsTest {
 
-    private static final String UTIL_ENV_TEST_VARIABLE = "util.test";
+    private static final String UTIL_ENV = "util.test";
 
     @Test
     public void testSubstituteVarsSystemPropertyNotNull() {
-        String testVariable = System.getProperty(UTIL_ENV_TEST_VARIABLE);
+        String testVariable = System.getProperty(UTIL_ENV);
         boolean isTestVariableChanged = false;
 
         if (testVariable == null) {
             testVariable = "utils-test-variable";
-            System.setProperty(UTIL_ENV_TEST_VARIABLE, testVariable);
+            System.setProperty(UTIL_ENV, testVariable);
             isTestVariableChanged = true;
         }
 
         Assert.assertEquals(ConfigurationUtils.substituteVariables("${util.test}"), testVariable);
 
         if (isTestVariableChanged) {
-            System.clearProperty(UTIL_ENV_TEST_VARIABLE);
+            System.clearProperty(UTIL_ENV);
         }
     }
 
     @Test
     public void testValueSubstituteVariables() {
-        String testVariable = System.getProperty(UTIL_ENV_TEST_VARIABLE);
+        String testVariable = System.getProperty(UTIL_ENV);
         boolean isTestVariableChanged = false;
 
         if (testVariable == null) {
             testVariable = "utils-test-variable";
-            System.setProperty(UTIL_ENV_TEST_VARIABLE, testVariable);
+            System.setProperty(UTIL_ENV, testVariable);
             isTestVariableChanged = true;
         }
 
         Assert.assertEquals(ConfigurationUtils.substituteVariables("ValueNotExist"), "ValueNotExist");
         if (isTestVariableChanged) {
-            System.clearProperty(UTIL_ENV_TEST_VARIABLE);
+            System.clearProperty(UTIL_ENV);
         }
     }
 
     @Test(expectedExceptions = RuntimeException.class)
     public void testSubstituteVarsSystemPropertyIsNull() {
-        String testVariable = System.getProperty(UTIL_ENV_TEST_VARIABLE);
+        String testVariable = System.getProperty(UTIL_ENV);
         boolean isTestVariableChanged = false;
 
         if (testVariable != null) {
-            System.clearProperty(UTIL_ENV_TEST_VARIABLE);
+            System.clearProperty(UTIL_ENV);
             isTestVariableChanged = true;
         }
 
@@ -78,7 +78,7 @@ public class UtilsTest {
             ConfigurationUtils.substituteVariables("${util.test}");
         } finally {
             if (isTestVariableChanged) {
-                System.setProperty(UTIL_ENV_TEST_VARIABLE, testVariable);
+                System.setProperty(UTIL_ENV, testVariable);
             }
         }
     }
@@ -107,8 +107,8 @@ public class UtilsTest {
 
     @Test(dataProvider = "paths")
     public void testPathSubstitution(String path, String pathSeparator) {
-        System.setProperty(UTIL_ENV_TEST_VARIABLE, path);
-        String config = "${" + UTIL_ENV_TEST_VARIABLE + "}" + pathSeparator + "deployment" + pathSeparator;
+        System.setProperty(UTIL_ENV, path);
+        String config = "${" + UTIL_ENV + "}" + pathSeparator + "deployment" + pathSeparator;
         Assert.assertEquals(ConfigurationUtils.substituteVariables(config),
                 path + pathSeparator + "deployment" + pathSeparator);
     }
