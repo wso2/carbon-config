@@ -22,7 +22,6 @@ import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.ConfigurationRuntimeException;
 import org.wso2.carbon.config.ConfigurationUtils;
 import org.wso2.carbon.config.annotation.Configuration;
-import org.wso2.carbon.config.internal.ConfigProviderDataHolder;
 import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.secvault.securevault.SecureVault;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
@@ -31,7 +30,6 @@ import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +50,8 @@ public class ConfigProviderImpl implements ConfigProvider {
     private static final Pattern PLACEHOLDER_PATTERN;
 
     private ConfigFileReader configFileReader;
+
+    private SecureVault secureVault;
 
     static {
         PLACEHOLDER_REGEX = "(.*?)(\\$\\{(" + getPlaceholderString() + "):([^,]+?)((,)(.+?))?\\})(.*?)";
@@ -74,8 +74,9 @@ public class ConfigProviderImpl implements ConfigProvider {
         }
     }
 
-    public ConfigProviderImpl(ConfigFileReader configFileReader) {
+    public ConfigProviderImpl(ConfigFileReader configFileReader, SecureVault secureVault) {
         this.configFileReader = configFileReader;
+        this.secureVault = secureVault;
     }
 
     @Override
@@ -187,10 +188,8 @@ public class ConfigProviderImpl implements ConfigProvider {
                     break;
                 case "sec":
                     try {
-                        Optional<SecureVault> optionalSecureVault = ConfigProviderDataHolder.getInstance()
-                                .getSecureVault();
-                        if (optionalSecureVault.isPresent()) {
-                            String newValue = new String(optionalSecureVault.get().resolve(value));
+                        if (secureVault != null) {
+                            String newValue = new String(secureVault.resolve(value));
                             inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
                         } else {
                             throw new ConfigurationRuntimeException("Secure Vault service is not available");
