@@ -137,7 +137,7 @@ The elements in the above example are explained below
 above example.
 * If you have an Array or Collection as a field type, you need to set the default values inside the bean constructor as shown below.
 
-   ```java
+````java
    @Configuration(namespace = "wso2.transports.netty", description = "Netty Transport Configurations")
 public class TransportsConfiguration {
 
@@ -152,7 +152,7 @@ public class TransportsConfiguration {
    @Element(description = "listener configurations")
    private Set<ListenerConfiguration> listenerConfigurations;
 
-            }
+ }
 ````
 
 ## Step 2: Getting the configuration bean object at runtime
@@ -295,7 +295,6 @@ protected void unregisterConfigProvider(ConfigProvider configProvider) {
 Shown below is a sample Configuration Doc file. This is generated for the `CarbonConfiguration` class. If you need to override the default configuations, you need to copy this configs to the `deployment.yaml` file in your server.
 
 ```yaml
-################################################################################
 #   Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved
 #
 #   Licensed under the Apache License, Version 2.0 (the \"License\");
@@ -309,7 +308,7 @@ Shown below is a sample Configuration Doc file. This is generated for the `Carbo
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-################################################################################
+
  # Carbon Configuration Parameters
 wso2.carbon:
    # value to uniquely identify a server
