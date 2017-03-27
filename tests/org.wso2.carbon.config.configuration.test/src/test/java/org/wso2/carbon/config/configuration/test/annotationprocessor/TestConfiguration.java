@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.wso2.carbon.config.configuration.configprovider;
+package org.wso2.carbon.config.configuration.test.annotationprocessor;
 
 import org.wso2.carbon.config.configuration.annotation.Configuration;
 
@@ -116,9 +116,9 @@ class Transports {
  *
  * @since 1.0.0
  */
-@XmlRootElement
-@Configuration(namespace = "configurations", description = "Test Configurations Bean")
-public class Configurations {
+@XmlRootElement(name = "testconfiguration")
+@Configuration(namespace = "testconfiguration", description = "Test Configurations Bean")
+public class TestConfiguration {
 
     private String tenant = "default";
     private Transports transports = new Transports();

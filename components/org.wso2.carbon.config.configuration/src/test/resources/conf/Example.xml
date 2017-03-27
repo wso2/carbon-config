@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurations>
+<testconfiguration>
     <tenant>tenant</tenant>
     <transports>
         <!--Transport with direct values-->
@@ -22,4 +22,4 @@
             <desc>This transport will use ${env:xyz.http.port,8888} as its port</desc>
         </transport>
     </transports>
-</configurations>
+</testconfiguration>
