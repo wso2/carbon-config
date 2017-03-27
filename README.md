@@ -98,12 +98,10 @@ public class CarbonConfiguration {
 The elements in the above example are explained below
 
 * **Configuration annotation:**
-   * This is a class-level annotation, which needs to be added to all the
-   configuration bean classes in the component.
-   * The `namespace` attribute is only needed for the root configuration bean.
+    * This is a class-level annotation, which needs to be added to all the configuration bean classes in the component.
+    * The `namespace` attribute is only needed for the root configuration bean.
    A unique namespace value needs to be set for the root configuration bean class. The namespace value should be prefixed with wso2.
-   * The `description` attribute needs to be set for all bean classes. The
-   description needs to be added in the configuration docs.
+    * The `description` attribute needs to be set for all bean classes. The description needs to be added in the configuration docs.
  For example:
 
  ```
@@ -117,28 +115,28 @@ The elements in the above example are explained below
   the particular field in the config docs.
 
 	 For example:
-  ```java
-  @Element(description = "value to uniquely identify a server")
-	private String id = "carbon-kernel";
-    ```
+```java
+   @Element(description = "value to uniquely identify a server")
+   private String id = "carbon-kernel";
+```
 
-* Ignore annotation:
+* **Ignore annotation:**
 
   This is a field-level annotation. Should only be added if you want to skip the
   field from the configuration docs. Theoretically, those fields should not be
   configured by end users.
 	 For example:
-  ```java
-  @Ignore
-	private String version;
-    ```
+```java
+   @Ignore
+   private String version;
+```
 
 * Every required field should have a default value in the bean class as shown in the
 above example.
 * If you have an Array or Collection as a field type, you need to set the default values inside the bean constructor as shown below.
 
-   ```java
-   @Configuration(namespace = "wso2.transports.netty", description = "Netty Transport Configurations")
+```java
+@Configuration(namespace = "wso2.transports.netty", description = "Netty Transport Configurations")
 public class TransportsConfiguration {
 
    //default values of an array or collection need to mention in class constructor
@@ -152,20 +150,19 @@ public class TransportsConfiguration {
    @Element(description = "listener configurations")
    private Set<ListenerConfiguration> listenerConfigurations;
 
-            }
+}
 ````
 
 ## Step 2: Getting the configuration bean object at runtime
 
-1. Add Reference to the ConfigProvider OSGI service as shown below.
-
- ```java
- /**
-* Get the ConfigProvider service.
-* This is the bind method that gets called for ConfigProvider service registration that satisfy the policy.
-*
-* @param configProvider the ConfigProvider service that is registered as a service.
-*/
+ 1. Add Reference to the ConfigProvider OSGI service as shown below.
+```java
+/**
+ * Get the ConfigProvider service.
+ * This is the bind method that gets called for ConfigProvider service registration that satisfy the policy.
+ *
+ * @param configProvider the ConfigProvider service that is registered as a service.
+ */
 @Reference(
       name = "carbon.config.provider",
       service = ConfigProvider.class,
@@ -178,32 +175,28 @@ protected void registerConfigProvider(ConfigProvider configProvider) {
 }
 
 /**
-* This is the unbind method for the above reference that gets called for ConfigProvider instance un-registrations.
-*
-* @param configProvider the ConfigProvider service that get unregistered.
-*/
+ * This is the unbind method for the above reference that gets called for ConfigProvider instance un-registrations.
+ *
+ * @param configProvider the ConfigProvider service that get unregistered.
+ */
 protected void unregisterConfigProvider(ConfigProvider configProvider) {
   DataHolder.getInstance().setConfigProvider(null);
 }
 ```
-
-2. Get the particular bean object by calling the `getConfigurationObject(Class<T> configClass)` API with bean class as below. This will return the configuration object of the class with the overriding values in the `deployment.yaml` file. If configurations do not exist in the `deployment.yaml`, the object will be returned with default values.
-
-  ```java
+ 2. Get the particular bean object by calling the `getConfigurationObject(Class<T> configClass)` API with bean class as below. This will return the configuration object of the class with the overriding values in the `deployment.yaml` file. If configurations do not exist in the `deployment.yaml`, the object will be returned with default values.
+```java
   <Bean> bean = DataHolder.getInstance().getConfigProvider().getConfigurationObject(<Bean>.class);
 ```
-
-3. Get the particular configuration map of the namespace in the `deployment.yaml` file by calling the `getConfigurationMap(String namespace)` with the namespace as shown below. This will return the configuration map of the namespace, provided that configurations exist for the given namespace in the `deployment.yaml` file.
-
+ 3. Get the particular configuration map of the namespace in the `deployment.yaml` file by calling the `getConfigurationMap(String namespace)` with the namespace as shown below. This will return the configuration map of the namespace, provided that configurations exist for the given namespace in the `deployment.yaml` file.
  ```java
  Map map = DataHolder.getInstance().getConfigProvider().getConfigurationMap(<namespace>);
  ```
 
 ## Step 3: Building the Carbon feature
 
-1. Add the Carbon core dependency to the component's POM file. This is to get the custom annotations defined in `carbon.core`.
+ 1. Add the Carbon core dependency to the component's POM file. This is to get the custom annotations defined in `carbon.core`.
 
- ```xml
+```xml
  <dependencies>
  …
    <dependency>
@@ -216,7 +209,7 @@ protected void unregisterConfigProvider(ConfigProvider configProvider) {
 
 2. Add the Maven plugin to the component's POM file. This is to create the configuration document by reading the configuration bean classes.
 
- ```xml
+```xml
  <build>
   <plugins>
 …
