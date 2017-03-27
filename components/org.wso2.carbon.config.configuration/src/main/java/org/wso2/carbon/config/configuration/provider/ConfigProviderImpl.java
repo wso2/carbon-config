@@ -22,6 +22,7 @@ import org.wso2.carbon.config.configuration.ConfigurationException;
 import org.wso2.carbon.config.configuration.ConfigurationRuntimeException;
 import org.wso2.carbon.config.configuration.ConfigurationUtils;
 import org.wso2.carbon.config.configuration.annotation.Configuration;
+import org.wso2.carbon.config.configuration.internal.ConfigProviderDataHolder;
 import org.wso2.carbon.config.configuration.reader.ConfigFileReader;
 import org.wso2.carbon.secvault.securevault.SecureVault;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
@@ -44,7 +45,7 @@ import java.util.regex.Pattern;
 public class ConfigProviderImpl implements ConfigProvider {
     private static final Logger logger = LoggerFactory.getLogger(ConfigProviderImpl.class.getName());
 
-    private static volatile Map<String, String> deploymentConfigs = null;
+    private Map<String, String> deploymentConfigs = null;
     //This regex is used to identify placeholders
     private static final String PLACEHOLDER_REGEX;
     //This is used to match placeholders
@@ -139,11 +140,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      */
     private void loadDeploymentConfiguration(ConfigFileReader configFileReader) throws ConfigurationException {
         if (deploymentConfigs == null) {
-            synchronized (this) {
-                if (deploymentConfigs == null) {
-                    deploymentConfigs = configFileReader.getDeploymentConfiguration();
-                }
-            }
+            deploymentConfigs = configFileReader.getDeploymentConfiguration();
         }
     }
 
