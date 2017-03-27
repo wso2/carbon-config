@@ -30,6 +30,7 @@ import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -188,12 +189,10 @@ public class ConfigProviderImpl implements ConfigProvider {
                     break;
                 case "sec":
                     try {
-                        if (secureVault != null) {
-                            String newValue = new String(secureVault.resolve(value));
-                            inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
-                        } else {
-                            throw new ConfigurationRuntimeException("Secure Vault service is not available");
-                        }
+                        SecureVault secureVault = getSecureVault().orElseThrow(() ->
+                                new ConfigurationRuntimeException("Secure Vault service is not available"));
+                        String newValue = new String(secureVault.resolve(value));
+                        inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
                     } catch (SecureVaultException e) {
                         throw new ConfigurationRuntimeException("Unable to resolve the given alias", e);
                     }
@@ -242,5 +241,9 @@ public class ConfigProviderImpl implements ConfigProvider {
         }
         logger.error(msg);
         throw new ConfigurationRuntimeException(msg);
+    }
+
+    private Optional<SecureVault> getSecureVault() {
+        return Optional.ofNullable(secureVault);
     }
 }

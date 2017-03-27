@@ -22,8 +22,11 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.config.ConfigurationException;
-import org.wso2.carbon.config.ConfigurationManager;
 import org.wso2.carbon.config.provider.ConfigProvider;
+import org.wso2.carbon.config.provider.ConfigProviderImpl;
+import org.wso2.carbon.config.reader.ConfigFileReader;
+import org.wso2.carbon.config.reader.XMLBasedConfigFileReader;
+import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
 import org.wso2.carbon.secvault.securevault.SecureVault;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
@@ -110,8 +113,8 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use ${env:xyz.http.port,8888} as its port");
 
-            ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                    ("Example.xml"), secureVault);
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
             //Transport 1
@@ -175,8 +178,8 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use ${env:xyz.http.port,8888} as its port");
 
-            ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                    ("Example.xml"), secureVault);
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             Map configurationMap = configProvider.getConfigurationMap("testconfiguration");
 
             Map transportsMap = (Map) configurationMap.get("transports");
@@ -213,8 +216,8 @@ public class ConfigProviderImplTest {
     @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when xml config file not found")
     public void xmlFileNotFoundTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                ("Example1.xml"), secureVault);
+        ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example1.xml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
     }
@@ -259,8 +262,8 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                    ("Example.yaml"), secureVault);
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
             //Transport 1
@@ -329,8 +332,8 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                    ("Example.yaml"), secureVault);
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             Map configurationMap = configProvider.getConfigurationMap("testconfiguration");
 
             Map transportsMap = (Map) configurationMap.get("transports");
@@ -367,8 +370,8 @@ public class ConfigProviderImplTest {
     @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when yaml config file not found")
     public void yamlFileNotFoundTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                ("Example1.yaml"), secureVault);
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example1.yaml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
     }
@@ -376,8 +379,8 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration map")
     public void invalidYAMLConfigMapTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                ("invalidconfiguration.yaml"), secureVault);
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         Map configurationMap = configProvider.getConfigurationMap("configurations");
         Assert.assertNull(configurationMap, "configurations map should be null, " +
                 "since no configuration found in yaml");
@@ -386,8 +389,8 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration object")
     public void invalidYAMLConfigObjectTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                ("invalidconfiguration.yaml"), secureVault);
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
         Assert.assertEquals(configurations.getTenant(), "default");
@@ -403,8 +406,9 @@ public class ConfigProviderImplTest {
             description = "This test will test functionality when configurations are not found in yaml file and " +
                     "configuration object")
     public void yamlConfigWithoutSystemValueTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                ("systemconfigwithoutdefaults.yaml"), secureVault);
+        ConfigFileReader fileReader =
+                new YAMLBasedConfigFileReader(getFilePath("systemconfigwithoutdefaults.yaml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
     }
@@ -413,8 +417,9 @@ public class ConfigProviderImplTest {
             description = "This test will test functionality when configurations are not found in yaml file and " +
                     "configuration object")
     public void yamlConfigWithoutEnvValueTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigurationManager.getInstance().initConfigProvider(getFilePath
-                ("envconfigwithoutdefaults.yaml"), secureVault);
+        ConfigFileReader fileReader =
+                new YAMLBasedConfigFileReader(getFilePath("envconfigwithoutdefaults.yaml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
     }

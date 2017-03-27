@@ -28,6 +28,7 @@ import org.wso2.carbon.secvault.securevault.SecureVaultInitializer;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 
 /**
@@ -79,8 +80,15 @@ public class ConfigurationManager {
      * @return configProvider service object
      * @throws ConfigurationException if an error occurred while initializing the config provider.
      */
-    public ConfigProvider initConfigProvider(Path filePath, SecureVault secureVault) throws ConfigurationException {
-        this.secureVault = secureVault;
+    public ConfigProvider initConfigProvider(Path filePath, SecureVault secureVault) throws
+            ConfigurationException {
+        // checking whether configuration provider is already initialized.
+        if (this.configProvider != null) {
+            logger.info("Configuration provider is already initialized. Returning the same provider without " +
+                    "reinitializing.");
+            return configProvider;
+        }
+
         //check whether configuration filepath is null. proceed if not null.
         if (filePath == null) {
             throw new ConfigurationException("No configuration filepath is provided. configuration provider will " +
@@ -91,6 +99,8 @@ public class ConfigurationManager {
             throw new ConfigurationException("No securevault service found. configuration provider will not be " +
                     "initialized!");
         }
+        this.secureVault = secureVault;
+
 
         String fileExtension = FilenameUtils.getExtension(filePath.toString());
         ConfigFileReader configFileReader;
@@ -102,8 +112,8 @@ public class ConfigurationManager {
             throw new ConfigurationException("Error while initializing configuration provider, file extension:" +
                     fileExtension + " is not supported");
         }
-        configProvider = new ConfigProviderImpl(configFileReader, secureVault);
-        return configProvider;
+
+        return configProvider = new ConfigProviderImpl(configFileReader, secureVault);
     }
 
     /**
@@ -126,7 +136,7 @@ public class ConfigurationManager {
      * If not initialized, returns null.
      * @return configProvider service object
      */
-    public ConfigProvider getConfigProvider() {
-        return configProvider;
+    public Optional<ConfigProvider> getConfigProvider() {
+        return Optional.ofNullable(configProvider);
     }
 }
