@@ -29,19 +29,19 @@
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
     <modules>
-        <module>components/org.wso2.carbon.config.configuration</module>
-        <module>features/org.wso2.carbon.config.configuration.feature</module>
-        <module>extensions/org.wso2.carbon.config.configuration.maven.plugin</module>
-        <module>tests/org.wso2.carbon.config.configuration.test</module>
-        <module>tests/org.wso2.carbon.config.configuration.test.coverage</module>
-        <module>samples/org.wso2.carbon.config.configuration.samples.standalone</module>
-        <module>samples/org.wso2.carbon.config.configuration.samples.osgi</module>
+        <module>components/org.wso2.carbon.config</module>
+        <module>features/org.wso2.carbon.config.feature</module>
+        <module>extensions/org.wso2.carbon.config.maven.plugin</module>
+        <module>tests/org.wso2.carbon.config.test</module>
+        <module>tests/org.wso2.carbon.config.test.coverage</module>
+        <module>samples/org.wso2.carbon.config.samples.standalone</module>
+        <module>samples/org.wso2.carbon.config.samples.osgi</module>
     </modules>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.wso2.carbon.config</groupId>
-                <artifactId>org.wso2.carbon.config.configuration</artifactId>
+                <artifactId>org.wso2.carbon.config</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -183,6 +183,17 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${wso2.maven.compiler.source}</source>
+                    <target>${wso2.maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
     <properties>
         <!-- Version ranges -->
