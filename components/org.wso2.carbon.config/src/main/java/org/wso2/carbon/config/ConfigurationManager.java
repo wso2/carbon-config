@@ -60,9 +60,10 @@ public class ConfigurationManager {
 
     /**
      * Initializes and returns configuration provider service from the configuration file provided.
+     * If service already exists, return initialized service object without reinitializing the service.
      *
      * @param filePath configuration absolute filepath(e.g: {carbon-home}/conf/deployment.yaml})
-     * @return configProvider service object
+     * @return configProvider service object.
      * @throws ConfigurationException if an error occurred while initializing the config provider.
      */
     public ConfigProvider iniConfigProvider(Path filePath) throws ConfigurationException {
@@ -71,8 +72,22 @@ public class ConfigurationManager {
     }
 
     /**
+     * Initializes and returns configuration provider service from the configuration file provided.
+     * If service exists and force initialize is not enabled, return initialized service object without reinitializing
+     * the object.
+     *
+     * @param filePath configuration absolute filepath(e.g: {carbon-home}/conf/deployment.yaml})
+     * @param forceInitEnabled flag to enable force reinitialize configuration provider.
+     * @return configProvider service object.
+     * @throws ConfigurationException if an error occurred while initializing the config provider.
+     */
+    public ConfigProvider iniConfigProvider(Path filePath, boolean forceInitEnabled) throws ConfigurationException {
+        loadSecureVaultService();
+        return initConfigProvider(filePath, secureVault, forceInitEnabled);
+    }
+
+    /**
      * Initializes and returns configuration provider service with the provided configuration file.
-     * If filepath is not specified, returns null.
      * If service exists, return initialized service object without reinitializing the object.
      *
      * @param filePath configuration absolute filepath(e.g: {carbon-home}/conf/deployment.yaml})
@@ -80,10 +95,28 @@ public class ConfigurationManager {
      * @return configProvider service object
      * @throws ConfigurationException if an error occurred while initializing the config provider.
      */
-    public ConfigProvider initConfigProvider(Path filePath, SecureVault secureVault) throws
+    public ConfigProvider initConfigProvider(Path filePath, SecureVault secureVault) throws ConfigurationException {
+        return initConfigProvider(filePath, secureVault, Boolean.FALSE);
+    }
+
+
+    /**
+     * Initializes and returns configuration provider service with the provided configuration file.
+     * If filepath is not specified, returns null.
+     * If service exists and force initialize is not enabled, return initialized service object without reinitializing
+     * the object.
+     *
+     * @param filePath configuration absolute filepath(e.g: {carbon-home}/conf/deployment.yaml})
+     * @param secureVault {@code SecureVault>}
+     * @param forceInitEnabled flag to enable force reinitialize configuration provider.
+     * @return configProvider service object
+     * @throws ConfigurationException if an error occurred while initializing the config provider.
+     */
+    public ConfigProvider initConfigProvider(Path filePath, SecureVault secureVault, boolean forceInitEnabled) throws
             ConfigurationException {
-        // checking whether configuration provider is already initialized.
-        if (this.configProvider != null) {
+        // check whether configuration provider is already initialized.
+        // if force flag is disabled and provider already exists, returns the same object.
+        if (!forceInitEnabled && this.configProvider != null) {
             logger.info("Configuration provider is already initialized. Returning the same provider without " +
                     "reinitializing.");
             return configProvider;
@@ -101,7 +134,7 @@ public class ConfigurationManager {
         }
         this.secureVault = secureVault;
 
-
+        // initialize config provider service from the configuration file provided.
         String fileExtension = FilenameUtils.getExtension(filePath.toString());
         ConfigFileReader configFileReader;
         if (YAML_EXTENSION.equalsIgnoreCase(fileExtension)) {
@@ -133,7 +166,7 @@ public class ConfigurationManager {
 
     /**
      * Returns configuration provider service object.
-     * If not initialized, returns null.
+     *
      * @return configProvider service object
      */
     public Optional<ConfigProvider> getConfigProvider() {
