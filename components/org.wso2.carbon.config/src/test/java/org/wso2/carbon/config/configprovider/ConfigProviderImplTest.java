@@ -30,8 +30,8 @@ import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.config.reader.XMLBasedConfigFileReader;
 import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
-import org.wso2.carbon.secvault.securevault.SecureVault;
-import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.SecureVault;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;

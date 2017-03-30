@@ -31,7 +31,7 @@ import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.config.provider.ConfigProviderImpl;
 import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
-import org.wso2.carbon.secvault.securevault.SecureVault;
+import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.utils.Utils;
 
 import java.nio.file.Path;
