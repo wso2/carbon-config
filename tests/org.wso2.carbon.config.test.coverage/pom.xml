@@ -25,8 +25,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.carbon.config.test.coverage</artifactId>
-    <name>WSO2 Carbon Configuration - Coverage Reports</name>
-    <description>Coverage Report for Carbon Configuration by merging unit and osgi tests</description>
+    <name>Carbon Configuration Coverage Reports</name>
+    <description>Coverage Report for Carbon Configuration by merging unit and osgi tests
+    </description>
     <url>http://wso2.com</url>
     <dependencies>
         <dependency>
@@ -85,20 +86,18 @@
                                                 <fileset dir="../../components/org.wso2.carbon.config/target">
                                                     <include name="jacoco.exec"/>
                                                 </fileset>
-                                                <fileset dir="../org.wso2.carbon.config.test/target">
+                                                <fileset dir="../../extensions/org.wso2.carbon.config.maven.plugin/target">
                                                     <include name="jacoco.exec"/>
                                                 </fileset>
                                             </executiondata>
-                                            <structure name="WSO2 Carbon Configuration - Coverage Report">
+                                            <structure name="Carbon Configuration Coverage Report">
                                                 <classfiles>
-                                                    <fileset
-                                                            dir="../../components/org.wso2.carbon.config/target/classes"/>
-                                                    <fileset
-                                                            dir="../org.wso2.carbon.config.test/target/classes"/>
+                                                    <fileset dir="../../components/org.wso2.carbon.config/target/classes"/>
+                                                    <fileset dir="../../extensions/org.wso2.carbon.config.maven.plugin/target/classes"/>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
                                                     <fileset dir="../../components/org.wso2.carbon.config/src"/>
-                                                    <fileset dir="../org.wso2.carbon.config.test/src"/>
+                                                    <fileset dir="../../extensions/org.wso2.carbon.config.maven.plugin/src"/>
                                                 </sourcefiles>
                                             </structure>
                                             <html destdir="${project.build.directory}/site/jacoco"/>

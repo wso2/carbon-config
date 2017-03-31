@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.carbon.config</artifactId>
     <name>Carbon Configuration</name>
-    <description>Carbon configuration is responsible for creating and manupulating
+    <description>Carbon configuration is responsible for creating and manipulating
     </description>
     <packaging>bundle</packaging>
     <url>http://wso2.com</url>
@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.secvault</groupId>
-            <artifactId>org.wso2.carbon.secvault.securevault</artifactId>
+            <artifactId>org.wso2.carbon.secvault</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -134,7 +134,7 @@
         </export.package>
         <import.package>
             org.wso2.carbon.utils.*;version="${carbon.utils.package.import.version.range}",
-            org.wso2.carbon.secvault.securevault.*;version="${carbon.securevault.version.range}",
+            org.wso2.carbon.secvault.*;version="${carbon.securevault.version.range}",
             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
             org.osgi.framework.*;version="${osgi.framework.package.import.version.range}",
             org.yaml.snakeyaml.*;version="${org.snakeyaml.package.import.version.range}",
