@@ -28,8 +28,8 @@ import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.config.reader.XMLBasedConfigFileReader;
 import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
-import org.wso2.carbon.secvault.securevault.SecureVault;
-import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.SecureVault;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -55,9 +55,10 @@ import javax.xml.bind.Unmarshaller;
 public class ConfigProviderImplTest {
 
     private static Logger logger = LoggerFactory.getLogger(ConfigProviderImplTest.class.getName());
-    private Path configPath;
     private static final String PASSWORD = "n3wP4s5w0r4";
     private SecureVault secureVault;
+    private static final String CONFIG_NAMESPACE = "testconfiguration";
+    private Path configPath;
 
     @BeforeTest
     public void setup() throws ConfigurationException {
@@ -180,7 +181,7 @@ public class ConfigProviderImplTest {
 
             ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-            Map configurationMap = configProvider.getConfigurationMap("testconfiguration");
+            Map configurationMap = configProvider.getConfigurationMap(CONFIG_NAMESPACE);
 
             Map transportsMap = (Map) configurationMap.get("transports");
             ArrayList transportList = (ArrayList) transportsMap.get("transport");
@@ -230,7 +231,7 @@ public class ConfigProviderImplTest {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             Yaml yaml = new Yaml();
             Map map = yaml.loadAs(fileInputStream, Map.class);
-            Map configurationMap = (Map) map.get("testconfiguration");
+            Map configurationMap = (Map) map.get(CONFIG_NAMESPACE);
             Map transportsMap = (Map) configurationMap.get("transports");
             ArrayList transportList = (ArrayList) transportsMap.get("transport");
             LinkedHashMap transport1 = (LinkedHashMap) transportList.get(0);
@@ -300,7 +301,7 @@ public class ConfigProviderImplTest {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             Yaml yaml = new Yaml();
             Map map = yaml.loadAs(fileInputStream, Map.class);
-            Map configurationMap = (Map) map.get("testconfiguration");
+            Map configurationMap = (Map) map.get(CONFIG_NAMESPACE);
             Map transportsMap = (Map) configurationMap.get("transports");
             ArrayList transportList = (ArrayList) transportsMap.get("transport");
             LinkedHashMap transport1 = (LinkedHashMap) transportList.get(0);
@@ -334,7 +335,7 @@ public class ConfigProviderImplTest {
         try {
             ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-            Map configurationMap = configProvider.getConfigurationMap("testconfiguration");
+            Map configurationMap = configProvider.getConfigurationMap(CONFIG_NAMESPACE);
 
             Map transportsMap = (Map) configurationMap.get("transports");
             ArrayList transportList = (ArrayList) transportsMap.get("transport");
@@ -442,7 +443,6 @@ public class ConfigProviderImplTest {
      * Set environmental variables.
      */
     private void setUpEnvironment() {
-        // This is how to set Environment Variables
         Map<String, String> envVarMap = new HashMap<>();
         envVarMap.put("pqr.http.port", "8501");
         envVarMap.put("sample.abc.port", "8081");

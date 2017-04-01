@@ -63,7 +63,7 @@
                             </bundles>
                             <importFeatures>
                                 <importFeatureDef>
-                                    <id>org.wso2.carbon.secvault.securevault.feature</id>
+                                    <id>org.wso2.carbon.secvault.feature</id>
                                     <version>${carbon.securevault.version}</version>
                                 </importFeatureDef>
                             </importFeatures>

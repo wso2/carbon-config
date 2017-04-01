@@ -39,7 +39,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.secvault</groupId>
-            <artifactId>org.wso2.carbon.secvault.securevault</artifactId>
+            <artifactId>org.wso2.carbon.secvault</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -52,7 +52,7 @@
         </export.package>
         <import.package>
             org.osgi.framework.*;version="${osgi.framework.package.import.version.range}",
-            org.wso2.carbon.secvault.securevault.*,
+            org.wso2.carbon.secvault.*,
             org.wso2.carbon.config.*,
             org.wso2.carbon.utils.*;version="${carbon.utils.package.import.version.range}",
             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",

@@ -27,10 +27,10 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.config.ConfigConstants;
+import org.wso2.carbon.config.ConfigProviderFactory;
 import org.wso2.carbon.config.ConfigurationException;
-import org.wso2.carbon.config.ConfigurationManager;
 import org.wso2.carbon.config.provider.ConfigProvider;
-import org.wso2.carbon.secvault.securevault.SecureVault;
+import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.utils.Utils;
 
 import java.nio.file.Path;
@@ -61,7 +61,7 @@ public class ConfigProviderComponent {
     }
 
     @Reference(
-            name = "org.wso2.carbon.secvault.securevault.SecureVault",
+            name = "org.wso2.carbon.secvault.SecureVault",
             service = SecureVault.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
@@ -84,8 +84,8 @@ public class ConfigProviderComponent {
         try {
             Path deploymentConfigPath = Paths.get(Utils.getCarbonConfigHome().toString(),
                     ConfigConstants.DEPLOYMENT_CONFIG_YAML);
-            ConfigurationManager configurationManager = ConfigurationManager.getInstance();
-            ConfigProvider configProvider = configurationManager.initConfigProvider(deploymentConfigPath, secureVault);
+            ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
+            ConfigProvider configProvider = configProviderFactory.getConfigProvider(deploymentConfigPath, secureVault);
             bundleContext.registerService(ConfigProvider.class, configProvider, null);
             logger.debug("ConfigProvider OSGi service registered successfully");
         } catch (ConfigurationException e) {
