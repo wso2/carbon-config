@@ -24,22 +24,23 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.config.test</artifactId>
-    <name>Carbon Configuration Tests</name>
-    <packaging>jar</packaging>
+    <artifactId>org.wso2.carbon.config.samples.common</artifactId>
+    <name>Carbon Configuration Sample Common</name>
+    <packaging>bundle</packaging>
     <url>http://wso2.com</url>
     <dependencies>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.wso2.carbon.config</groupId>
             <artifactId>org.wso2.carbon.config</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-io.wso2</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
     </dependencies>
+    <properties>
+        <export.package>
+            org.wso2.carbon.config.samples.common.*;version="${carbon.config.package.export.version}"
+        </export.package>
+        <import.package>
+            org.wso2.carbon.config.*;version="${carbon.config.package.import.version.range}",
+            org.osgi.framework.*;version="${osgi.framework.package.import.version.range}"
+        </import.package>
+    </properties>
 </project>

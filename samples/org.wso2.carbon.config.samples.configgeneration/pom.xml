@@ -24,22 +24,45 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.config.test</artifactId>
-    <name>Carbon Configuration Tests</name>
+    <artifactId>org.wso2.carbon.config.samples.configgeneration</artifactId>
+    <name>Carbon Configuration Generate Configuration Sample</name>
     <packaging>jar</packaging>
     <url>http://wso2.com</url>
     <dependencies>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.wso2.carbon.config</groupId>
             <artifactId>org.wso2.carbon.config</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-io.wso2</groupId>
-            <artifactId>commons-io</artifactId>
+            <groupId>org.wso2.carbon.config</groupId>
+            <artifactId>org.wso2.carbon.config.samples.common</artifactId>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <!-- Specify this plugin to build the configuration class -->
+            <plugin>
+                <groupId>org.wso2.carbon.config</groupId>
+                <artifactId>org.wso2.carbon.config.maven.plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>create-doc</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+                <!-- Specifying the below configuration will create the configuration only
+                for the CarbonConfiguration class -->
+                <!--<configuration>-->
+                    <!--<configclasses>-->
+                        <!--<configclass>-->
+                            <!--org.wso2.carbon.config.samples.common.ParentConfiguration-->
+                        <!--</configclass>-->
+                    <!--</configclasses>-->
+                <!--</configuration>-->
+            </plugin>
+        </plugins>
+    </build>
 </project>

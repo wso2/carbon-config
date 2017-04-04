@@ -15,7 +15,6 @@
  */
 package org.wso2.carbon.config;
 
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.config.provider.ConfigProvider;
@@ -71,7 +70,7 @@ public class ConfigProviderFactory {
                     "initialized!");
         }
         // initialize config provider service from the configuration file provided.
-        String fileExtension = FilenameUtils.getExtension(filePath.toString());
+        String fileExtension = ConfigurationUtils.getExtension(filePath.toString());
         ConfigFileReader configFileReader;
         if (YAML_EXTENSION.equalsIgnoreCase(fileExtension)) {
             configFileReader = new YAMLBasedConfigFileReader(filePath);
