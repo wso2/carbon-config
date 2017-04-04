@@ -26,12 +26,12 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.config.ConfigConstants;
 import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.config.provider.ConfigProviderImpl;
 import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.secvault.SecureVault;
+import org.wso2.carbon.utils.Constants;
 import org.wso2.carbon.utils.Utils;
 
 import java.nio.file.Path;
@@ -82,8 +82,8 @@ public class ConfigProviderComponent {
      */
     private void initializeConfigProvider(BundleContext bundleContext) {
         // TODO: Support getting configProviderImpl in non-OSGi mode
-        Path deploymentConfigPath = Paths.get(Utils.getCarbonConfigHome().toString(),
-                ConfigConstants.DEPLOYMENT_CONFIG_YAML);
+        Path deploymentConfigPath = Paths.get(Utils.getRuntimeConfigPath().toString(),
+                Constants.DEPLOYMENT_CONFIG_YAML);
         ConfigFileReader configFileReader = new YAMLBasedConfigFileReader(deploymentConfigPath);
         ConfigProvider configProvider = new ConfigProviderImpl(configFileReader);
         bundleContext.registerService(ConfigProvider.class, configProvider, null);

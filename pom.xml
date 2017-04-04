@@ -211,7 +211,7 @@
         <!-- Carbon components -->
         <carbon.securevault.version>5.0.0-SNAPSHOT</carbon.securevault.version>
         <carbon.securevault.version.range>[5.0.0, 6.0.0)</carbon.securevault.version.range>
-        <carbon.utils.version>1.0.0</carbon.utils.version>
+        <carbon.utils.version>1.1.0</carbon.utils.version>
         <carbon.utils.package.import.version.range>[1.0.0, 2.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
