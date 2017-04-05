@@ -28,6 +28,14 @@
     <name>Carbon Configuration Parent</name>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
+
+    <scm>
+        <url>https://github.com/wso2/carbon-config.git</url>
+        <developerConnection>scm:git:https://github.com/wso2/carbon-config.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2/carbon-config.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
     <modules>
         <module>components/org.wso2.carbon.config</module>
         <module>features/org.wso2.carbon.config.feature</module>
@@ -35,6 +43,7 @@
         <module>tests/org.wso2.carbon.config.test</module>
         <module>tests/org.wso2.carbon.config.test.coverage</module>
     </modules>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
