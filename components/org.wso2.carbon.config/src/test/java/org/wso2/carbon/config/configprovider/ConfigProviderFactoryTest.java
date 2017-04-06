@@ -17,6 +17,7 @@ package org.wso2.carbon.config.configprovider;
 
 import org.easymock.EasyMock;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.config.ConfigProviderFactory;
@@ -35,6 +36,9 @@ import java.nio.file.Paths;
  * @since 1.0.0
  */
 public class ConfigProviderFactoryTest {
+    public static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
+    public static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
+    public static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
     private SecureVault secureVault;
     private static final String PASSWORD = "n3wP4s5w0r4";
     private Path configPath;
@@ -48,6 +52,9 @@ public class ConfigProviderFactoryTest {
             }
             configPath = Paths.get(resourceUrl.getPath());
         }
+        System.setProperty(SYS_KEY_MASTER_KEY_FILE, configPath.resolve("master-keys.yaml").toString());
+        System.setProperty(SYS_KEY_SEC_PROP_FILE, configPath.resolve("secrets.properties").toString());
+        System.setProperty(SYS_KEY_KEYSTORE_FILE, configPath.resolve("wso2carbon.jks").toString());
 
         secureVault = EasyMock.mock(SecureVault.class);
         try {
@@ -56,6 +63,13 @@ public class ConfigProviderFactoryTest {
             throw new ConfigurationException("Error resolving secure vault", e);
         }
         EasyMock.replay(secureVault);
+    }
+
+    @AfterClass
+    public void clean() {
+        System.clearProperty(SYS_KEY_MASTER_KEY_FILE);
+        System.clearProperty(SYS_KEY_SEC_PROP_FILE);
+        System.clearProperty(SYS_KEY_KEYSTORE_FILE);
     }
 
     @Test(description = "test case when file path is not provided, when getting config provider", expectedExceptions
@@ -99,6 +113,15 @@ public class ConfigProviderFactoryTest {
     public void invalidConfigFileTestCase() throws ConfigurationException {
         ConfigProviderFactory.getConfigProvider(getFilePath("Example.txt"),
                 secureVault);
+    }
+
+    @Test(description = "test case for config provider when securevault is not predefined. yaml configuration file " +
+            "contains securevault configuration")
+    public void secureVaultNotPredefinedTestCase() throws ConfigurationException {
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("deployment.yaml"));
+        Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
+        TestConfiguration testConfiguration = configProvider.getConfigurationObject(TestConfiguration.class);
+        Assert.assertEquals(testConfiguration.getTenant(), "tenant");
     }
 
     /**

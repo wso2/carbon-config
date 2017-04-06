@@ -118,7 +118,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
                     System.setProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION, Boolean.toString(true));
                     Configuration configuration = (Configuration) configClass.getAnnotation(Configuration.class);
                     Object configObject = configClass.newInstance();
-                    System.setProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION, Boolean.toString(false));
+                    System.clearProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION);
                     // add description comment to the root node.
                     finalMap.put(COMMENT_KEY_PREFIX + configuration.namespace(), createDescriptionComment(configuration
                             .description()));
