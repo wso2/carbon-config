@@ -26,6 +26,7 @@ public final class ConfigConstants {
     public static final String TEMP_CONFIG_FILE_NAME = "temp_config_classnames.txt";
     public static final String CONFIG_DIR = "config-docs";
     public static final String DEPLOYMENT_CONFIG_YAML = "deployment.yaml";
+    public static final String SYSTEM_PROPERTY_DOC_GENERATION = "config.doc.generation";
 
     /**
      * Maven project properties.

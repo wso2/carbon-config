@@ -113,8 +113,12 @@ public class ConfigDocumentMojo extends AbstractMojo {
                 Class configClass = realm.loadClass(configClassName);
                 if (configClass != null && configClass.isAnnotationPresent(Configuration.class)) {
                     // read configuration annotation
+                    // Fix the issue #3, set the system.property before creating the object, to notify it is called
+                    // by maven plugin.
+                    System.setProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION, Boolean.toString(true));
                     Configuration configuration = (Configuration) configClass.getAnnotation(Configuration.class);
                     Object configObject = configClass.newInstance();
+                    System.setProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION, Boolean.toString(false));
                     // add description comment to the root node.
                     finalMap.put(COMMENT_KEY_PREFIX + configuration.namespace(), createDescriptionComment(configuration
                             .description()));

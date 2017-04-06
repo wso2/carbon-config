@@ -119,7 +119,7 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     @Override
-    public Map getConfigurationMap(String namespace) throws ConfigurationException {
+    public Object getConfigurationObject(String namespace) throws ConfigurationException {
         // lazy loading deployment.yaml configuration, if it is not exists
         loadDeploymentConfiguration(configFileReader);
         // check for json configuration from deployment configs of namespace.
@@ -128,7 +128,8 @@ public class ConfigProviderImpl implements ConfigProvider {
             String processedString = processPlaceholder(configString);
             processedString = ConfigurationUtils.substituteVariables(processedString);
             Yaml yaml = new Yaml();
-            return yaml.loadAs(processedString, Map.class);
+            // Fix the issue #17. return object can be a List or Map
+            return yaml.load(processedString);
         }
         logger.error("configuration doesn't exist for the namespace: {} in deployment yaml   . Hence " +
                 "return null object", namespace);

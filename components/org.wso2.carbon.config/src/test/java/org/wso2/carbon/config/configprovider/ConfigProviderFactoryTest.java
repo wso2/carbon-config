@@ -62,48 +62,42 @@ public class ConfigProviderFactoryTest {
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No configuration filepath is provided." +
             " configuration provider will not be initialized!")
     public void filePathNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(null, secureVault);
+        ConfigProviderFactory.getConfigProvider(null, secureVault);
     }
 
     @Test(description = "test case when file path is incorrect, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No configuration filepath is provided." +
             " configuration provider will not be initialized!")
     public void incorrectFilePathTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(getFilePath("incorrectfilepath.yaml"), secureVault);
+        ConfigProviderFactory.getConfigProvider(getFilePath("incorrectfilepath.yaml"), secureVault);
     }
 
     @Test(description = "test case when securevault is not provided, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No securevault service found. " +
             "configuration provider will not be initialized!")
     public void secureVaultNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(getFilePath("Example.yaml"), null);
+        ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"), null);
     }
 
     @Test(description = "test case for xml configuration file")
     public void xmlConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        ConfigProvider configProvider = configProviderFactory.getConfigProvider(getFilePath("Example.xml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.xml"),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for yaml configuration file")
     public void yamlConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        ConfigProvider configProvider = configProviderFactory.getConfigProvider(getFilePath("Example.yaml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for .txt configuration file. ", expectedExceptions = ConfigurationException.class,
-            expectedExceptionsMessageRegExp = "Error while initializing configuration provider, file extension:txt is" +
-                    " not supported")
+            expectedExceptionsMessageRegExp = "Error while initializing configuration provider, file extension is not" +
+                    " supported")
     public void invalidConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(getFilePath("Example.txt"),
+        ConfigProviderFactory.getConfigProvider(getFilePath("Example.txt"),
                 secureVault);
     }
 

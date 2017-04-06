@@ -42,6 +42,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -181,7 +182,7 @@ public class ConfigProviderImplTest {
 
             ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-            Map configurationMap = configProvider.getConfigurationMap(CONFIG_NAMESPACE);
+            Map configurationMap = (Map) configProvider.getConfigurationObject(CONFIG_NAMESPACE);
 
             Map transportsMap = (Map) configurationMap.get("transports");
             ArrayList transportList = (ArrayList) transportsMap.get("transport");
@@ -335,10 +336,10 @@ public class ConfigProviderImplTest {
         try {
             ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-            Map configurationMap = configProvider.getConfigurationMap(CONFIG_NAMESPACE);
+            Map configurationMap = (Map) configProvider.getConfigurationObject(CONFIG_NAMESPACE);
 
             Map transportsMap = (Map) configurationMap.get("transports");
-            ArrayList transportList = (ArrayList) transportsMap.get("transport");
+            List transportList = (List) transportsMap.get("transport");
             LinkedHashMap transport1 = (LinkedHashMap) transportList.get(0);
             LinkedHashMap transport2 = (LinkedHashMap) transportList.get(1);
             LinkedHashMap transport3 = (LinkedHashMap) transportList.get(2);
@@ -368,6 +369,17 @@ public class ConfigProviderImplTest {
         }
     }
 
+    public void yamlConfigSequenceTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("sampledatasource.yaml"));
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+        List<Map<String, String>> datasources = (List<Map<String, String>>) configProvider.getConfigurationObject
+                ("wso2.datasources");
+        Assert.assertNotNull(datasources, "datasource configuration should not be null");
+        Assert.assertEquals(datasources.size(), 2);
+        Assert.assertEquals(datasources.get(0).get("name"), "WSO2_CARBON_DB");
+        Assert.assertEquals(datasources.get(1).get("name"), "WSO2_ANALYTICS_DB");
+    }
+
     @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when yaml config file not found")
     public void yamlFileNotFoundTestCase() throws ConfigurationException {
@@ -382,7 +394,7 @@ public class ConfigProviderImplTest {
     public void invalidYAMLConfigMapTestCase() throws ConfigurationException {
         ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-        Map configurationMap = configProvider.getConfigurationMap("configurations");
+        Map configurationMap = (Map) configProvider.getConfigurationObject("configurations");
         Assert.assertNull(configurationMap, "configurations map should be null, " +
                 "since no configuration found in yaml");
     }

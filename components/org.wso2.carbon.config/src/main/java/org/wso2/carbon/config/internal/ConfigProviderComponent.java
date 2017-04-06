@@ -84,8 +84,7 @@ public class ConfigProviderComponent {
         try {
             Path deploymentConfigPath = Paths.get(Utils.getCarbonConfigHome().toString(),
                     ConfigConstants.DEPLOYMENT_CONFIG_YAML);
-            ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-            ConfigProvider configProvider = configProviderFactory.getConfigProvider(deploymentConfigPath, secureVault);
+            ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(deploymentConfigPath, secureVault);
             bundleContext.registerService(ConfigProvider.class, configProvider, null);
             logger.debug("ConfigProvider OSGi service registered successfully");
         } catch (ConfigurationException e) {

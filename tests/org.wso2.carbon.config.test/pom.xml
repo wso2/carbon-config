@@ -37,5 +37,11 @@
             <groupId>org.wso2.carbon.config</groupId>
             <artifactId>org.wso2.carbon.config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-io.wso2</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

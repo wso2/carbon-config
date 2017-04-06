@@ -20,6 +20,7 @@ limitations under the License.
 <suite name="Carbon-Configuration-Unit-Test-Suite">
     <test name="carbon-configuration-unit-tests" preserve-order="true" parallel="false">
         <classes>
+            <class name="org.wso2.carbon.config.configprovider.ConfigProviderFactoryTest"/>
             <class name="org.wso2.carbon.config.configprovider.ConfigProviderImplTest"/>
             <class name="org.wso2.carbon.config.UtilsTest"/>
         </classes>

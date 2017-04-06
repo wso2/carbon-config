@@ -19,8 +19,6 @@ package org.wso2.carbon.config.provider;
 
 import org.wso2.carbon.config.ConfigurationException;
 
-import java.util.Map;
-
 /**
  * ConfigProvider provides the configuration mapping of the class namespace.
  * This will update the configuration values with
@@ -42,11 +40,12 @@ public interface ConfigProvider {
     <T extends Object> T getConfigurationObject(Class<T> configClass) throws ConfigurationException;
 
     /**
-     * Returns configuration map of the namespace.
+     * Returns configuration object of the namespace.
+     * Configuration object can be either List or Map, it depends on configuration of the namespace.
      *
      * @param namespace config namespace
-     * @return configuration map
+     * @return configuration object
      * @throws ConfigurationException if there is a problem while reading the configurations
      */
-    Map getConfigurationMap(String namespace) throws ConfigurationException;
+    Object getConfigurationObject(String namespace) throws ConfigurationException;
 }
