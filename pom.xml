@@ -28,6 +28,14 @@
     <name>Carbon Configuration Parent</name>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
+
+    <scm>
+        <url>https://github.com/wso2/carbon-config.git</url>
+        <developerConnection>scm:git:https://github.com/wso2/carbon-config.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2/carbon-config.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
     <modules>
         <module>components/org.wso2.carbon.config</module>
         <module>features/org.wso2.carbon.config.feature</module>
@@ -39,6 +47,7 @@
         <module>samples/org.wso2.carbon.config.samples.osgi</module>
         <module>tests/org.wso2.carbon.config.test.coverage</module>
     </modules>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -82,8 +91,8 @@
                 <version>${carbon.securevault.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.utils</artifactId>
+                <groupId>org.wso2.carbon.utils</groupId>
+                <artifactId>carbon-utils</artifactId>
                 <version>${carbon.utils.version}</version>
             </dependency>
             <dependency>
@@ -187,6 +196,11 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.wso2.carbon.maven</groupId>
+                    <artifactId>carbon-feature-plugin</artifactId>
+                    <version>${carbon.feature.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -212,10 +226,10 @@
         <carbon.config.package.import.version.range>[1.0.0, 2.0.0)</carbon.config.package.import.version.range>
 
         <!-- Carbon components -->
-        <carbon.securevault.version>5.0.0-SNAPSHOT</carbon.securevault.version>
+        <carbon.securevault.version>5.0.1</carbon.securevault.version>
         <carbon.securevault.version.range>[5.0.0, 6.0.0)</carbon.securevault.version.range>
-        <carbon.utils.version>5.2.0-SNAPSHOT</carbon.utils.version>
-        <carbon.utils.package.import.version.range>[5.0.0, 6.0.0)</carbon.utils.package.import.version.range>
+        <carbon.utils.version>1.1.0</carbon.utils.version>
+        <carbon.utils.package.import.version.range>[1.0.0, 2.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>
@@ -235,5 +249,6 @@
         <maven.plugin.annotations.version>3.4</maven.plugin.annotations.version>
         <maven.core.version>3.3.9</maven.core.version>
         <maven.plugin.plugin.version>3.3</maven.plugin.plugin.version>
+        <carbon.feature.plugin.version>3.1.0</carbon.feature.plugin.version>
     </properties>
 </project>

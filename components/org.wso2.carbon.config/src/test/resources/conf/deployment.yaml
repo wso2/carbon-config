@@ -1,0 +1,19 @@
+wso2.securevault:
+  secretRepository:
+    type: org.wso2.carbon.secvault.repository.DefaultSecretRepository
+    parameters:
+      privateKeyAlias: wso2carbon
+      keystoreLocation: ${sys:keystore.file}
+      secretPropertiesFile: ${sys:sec.prop.file}
+  masterKeyReader:
+    type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader
+    parameters:
+      masterKeyReaderFile: ${sys:master.key.file}
+
+testconfiguration:
+  tenant: tenant
+  transports:
+    transport:        #Transport with direct values
+      -  name: abc
+         port: 8000
+         secure: false

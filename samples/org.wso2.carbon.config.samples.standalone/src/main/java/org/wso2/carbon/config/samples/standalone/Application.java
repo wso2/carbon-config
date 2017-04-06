@@ -46,12 +46,10 @@ public class Application {
         copyFilesToPWD(); // Copies required files to the current working directory
         // Create new configuration provider
         Path deploymentConfigPath = Paths.get(FILE_FOLDER, "conf", FILE_NAME);
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
 
         // Get configuration
         try {
-            ConfigProvider configProvider = configProviderFactory
-                    .getConfigProvider(deploymentConfigPath);
+            ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(deploymentConfigPath);
             ParentConfiguration parentConfiguration = configProvider
                     .getConfigurationObject(ParentConfiguration.class);
             logger.info("Parent configuration - {}", parentConfiguration);

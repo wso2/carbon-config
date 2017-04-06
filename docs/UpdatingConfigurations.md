@@ -157,7 +157,12 @@ public class TransportsConfiguration {
 
 ## Step 2: Getting the configuration bean object at runtime
 
-1. Add Reference to the ConfigProvider OSGI service as shown below.
+1. Get ConfigProvider service object. You can get ConfigProvider object either in OSGi mode or in non-OSGi mode. 
+Follow the below steps based on the mode used.
+
+##### In OSGi Mode
+
+* Add Reference to the ConfigProvider OSGI service as shown below.
 
  ```java
  /**
@@ -187,16 +192,40 @@ protected void unregisterConfigProvider(ConfigProvider configProvider) {
 }
 ```
 
+ ```java
+ ConfigProvider configProvider = DataHolder.getInstance().getConfigProvider();
+ ```
+##### In non-OSGi Mode
+
+* Get ConfigProvider object from ConfigProviderFactory class by calling the `getConfigProvider(Path filePath)
+` API with configuration file path(e.g: deployment.yaml file path) as below. When you calling this API, make sure 
+secure-vault configuration is also included in the configuration file under the namespace `wso2.securevault`. This 
+will return ConfigProvider object.
+
+````java
+  ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(<configuration file path>);
+````
+
+* If securevault object already exists, get ConfigProvider object by calling the `getConfigProvider(Path filePath, 
+SecureVault secureVault)` API with configuration file path and secure vault object as below. This will return 
+ConfigProvider object.
+
+````java
+  ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(<configuration file path>, <SecureVault>.object);
+````
+
 2. Get the particular bean object by calling the `getConfigurationObject(Class<T> configClass)` API with bean class as below. This will return the configuration object of the class with the overriding values in the `deployment.yaml` file. If configurations do not exist in the `deployment.yaml`, the object will be returned with default values.
 
   ```java
   <Bean> bean = DataHolder.getInstance().getConfigProvider().getConfigurationObject(<Bean>.class);
 ```
 
-3. Get the particular configuration map of the namespace in the `deployment.yaml` file by calling the `getConfigurationMap(String namespace)` with the namespace as shown below. This will return the configuration map of the namespace, provided that configurations exist for the given namespace in the `deployment.yaml` file.
+3. Get the particular configuration object of the namespace in the `deployment.yaml` file by calling the 
+`getConfigurationObject(String namespace)` with the namespace as shown below. This will return the configuration 
+object of the namespace, provided that configurations exist for the given namespace in the `deployment.yaml` file.
 
  ```java
- Map map = DataHolder.getInstance().getConfigProvider().getConfigurationMap(<namespace>);
+ Object object = DataHolder.getInstance().getConfigProvider().getConfigurationObject(<namespace>);
  ```
 
 ## Step 3: Building the Carbon feature

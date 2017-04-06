@@ -17,6 +17,7 @@ package org.wso2.carbon.config.configprovider;
 
 import org.easymock.EasyMock;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.config.ConfigProviderFactory;
@@ -35,8 +36,11 @@ import java.nio.file.Paths;
  * @since 1.0.0
  */
 public class ConfigProviderFactoryTest {
-    private SecureVault secureVault;
+    public static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
+    public static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
+    public static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
     private static final String PASSWORD = "n3wP4s5w0r4";
+    private SecureVault secureVault;
     private Path configPath;
 
     @BeforeTest
@@ -48,6 +52,9 @@ public class ConfigProviderFactoryTest {
             }
             configPath = Paths.get(resourceUrl.getPath());
         }
+        System.setProperty(SYS_KEY_MASTER_KEY_FILE, configPath.resolve("master-keys.yaml").toString());
+        System.setProperty(SYS_KEY_SEC_PROP_FILE, configPath.resolve("secrets.properties").toString());
+        System.setProperty(SYS_KEY_KEYSTORE_FILE, configPath.resolve("wso2carbon.jks").toString());
 
         secureVault = EasyMock.mock(SecureVault.class);
         try {
@@ -58,53 +65,63 @@ public class ConfigProviderFactoryTest {
         EasyMock.replay(secureVault);
     }
 
+    @AfterClass
+    public void clean() {
+        System.clearProperty(SYS_KEY_MASTER_KEY_FILE);
+        System.clearProperty(SYS_KEY_SEC_PROP_FILE);
+        System.clearProperty(SYS_KEY_KEYSTORE_FILE);
+    }
+
     @Test(description = "test case when file path is not provided, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No configuration filepath is provided." +
             " configuration provider will not be initialized!")
     public void filePathNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(null, secureVault);
+        ConfigProviderFactory.getConfigProvider(null, secureVault);
     }
 
     @Test(description = "test case when file path is incorrect, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No configuration filepath is provided." +
             " configuration provider will not be initialized!")
     public void incorrectFilePathTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(getFilePath("incorrectfilepath.yaml"), secureVault);
+        ConfigProviderFactory.getConfigProvider(getFilePath("incorrectfilepath.yaml"), secureVault);
     }
 
     @Test(description = "test case when securevault is not provided, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No securevault service found. " +
             "configuration provider will not be initialized!")
     public void secureVaultNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(getFilePath("Example.yaml"), null);
+        ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"), null);
     }
 
     @Test(description = "test case for xml configuration file")
     public void xmlConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        ConfigProvider configProvider = configProviderFactory.getConfigProvider(getFilePath("Example.xml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.xml"),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for yaml configuration file")
     public void yamlConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        ConfigProvider configProvider = configProviderFactory.getConfigProvider(getFilePath("Example.yaml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for .txt configuration file. ", expectedExceptions = ConfigurationException.class,
-            expectedExceptionsMessageRegExp = "Error while initializing configuration provider, file extension:txt is" +
-                    " not supported")
+            expectedExceptionsMessageRegExp = "Error while initializing configuration provider, file extension is not" +
+                    " supported")
     public void invalidConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory configProviderFactory = new ConfigProviderFactory();
-        configProviderFactory.getConfigProvider(getFilePath("Example.txt"),
+        ConfigProviderFactory.getConfigProvider(getFilePath("Example.txt"),
                 secureVault);
+    }
+
+    @Test(description = "test case for config provider when securevault is not predefined. yaml configuration file " +
+            "contains securevault configuration")
+    public void secureVaultNotPredefinedTestCase() throws ConfigurationException {
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("deployment.yaml"));
+        Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
+        TestConfiguration testConfiguration = configProvider.getConfigurationObject(TestConfiguration.class);
+        Assert.assertEquals(testConfiguration.getTenant(), "tenant");
     }
 
     /**

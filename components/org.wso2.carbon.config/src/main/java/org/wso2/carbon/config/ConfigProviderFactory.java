@@ -30,12 +30,14 @@ import java.nio.file.Path;
 
 
 /**
- * This class contains the functionality in managing configuration.
+ * This factory class will initialize and return configProvider instance.
+ *
+ * @since 1.0.0
  */
 public class ConfigProviderFactory {
 
-    private static final String YAML_EXTENSION = "yaml";
-    private static final String XML_EXTENSION = "xml";
+    private static final String YAML_EXTENSION = ".yaml";
+    private static final String XML_EXTENSION = ".xml";
     private static Logger logger = LoggerFactory.getLogger(ConfigProviderFactory.class);
 
     /**
@@ -45,8 +47,8 @@ public class ConfigProviderFactory {
      * @return configProvider service object.
      * @throws ConfigurationException if an error occurred while initializing the config provider.
      */
-    public ConfigProvider getConfigProvider(Path filePath) throws ConfigurationException {
-        return getConfigProvider(filePath, getSecureVaultService(filePath));
+    public static ConfigProvider getConfigProvider(Path filePath) throws ConfigurationException {
+        return getConfigProvider(filePath, getSecureVault(filePath));
     }
 
     /**
@@ -58,7 +60,8 @@ public class ConfigProviderFactory {
      * @throws ConfigurationException if filepath == null or securevault == null or configuration file extension is
      * not equal to xml or yaml.
      */
-    public ConfigProvider getConfigProvider(Path filePath, SecureVault secureVault) throws ConfigurationException {
+    public static ConfigProvider getConfigProvider(Path filePath, SecureVault secureVault) throws
+            ConfigurationException {
         //check whether configuration filepath is null. proceed if not null.
         if (filePath == null || !filePath.toFile().exists()) {
             throw new ConfigurationException("No configuration filepath is provided. configuration provider will " +
@@ -69,16 +72,18 @@ public class ConfigProviderFactory {
             throw new ConfigurationException("No securevault service found. configuration provider will not be " +
                     "initialized!");
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("initialize config provider instance from configuration file: " + filePath.toString());
+        }
         // initialize config provider service from the configuration file provided.
-        String fileExtension = ConfigurationUtils.getExtension(filePath.toString());
         ConfigFileReader configFileReader;
-        if (YAML_EXTENSION.equalsIgnoreCase(fileExtension)) {
+        if (filePath.toString().endsWith(YAML_EXTENSION)) {
             configFileReader = new YAMLBasedConfigFileReader(filePath);
-        } else if (XML_EXTENSION.equalsIgnoreCase(fileExtension)) {
+        } else if (filePath.toString().endsWith(XML_EXTENSION)) {
             configFileReader = new XMLBasedConfigFileReader(filePath);
         } else {
-            throw new ConfigurationException("Error while initializing configuration provider, file extension:" +
-                    fileExtension + " is not supported");
+            throw new ConfigurationException("Error while initializing configuration provider, file extension is not " +
+                    "supported");
         }
         return new ConfigProviderImpl(configFileReader, secureVault);
     }
@@ -89,16 +94,17 @@ public class ConfigProviderFactory {
      * @param filePath configuration absolute filepath(e.g: {carbon-home}/conf/deployment.yaml})
      * @throws ConfigurationException if an error occurred while loading securevault service.
      */
-    private SecureVault getSecureVaultService(Path filePath) throws ConfigurationException {
+    private static SecureVault getSecureVault(Path filePath) throws ConfigurationException {
         //check whether configuration filepath is null. proceed if not null.
         if (filePath == null || !filePath.toFile().exists()) {
             throw new ConfigurationException("Configuration filepath is not provided. configuration provider will " +
                     "not be initialized!");
         }
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("initialize securevault instance from configuration file: " + filePath.toString());
+        }
         try {
-            SecureVaultFactory secureVaultFactory = new SecureVaultFactory();
-            return secureVaultFactory.getSecureVault(filePath).orElseThrow(() -> new ConfigurationException("Error " +
+            return SecureVaultFactory.getSecureVault(filePath).orElseThrow(() -> new ConfigurationException("Error " +
                     "while loading securevault service"));
         } catch (SecureVaultException e) {
             throw new ConfigurationException("Error while loading securevault service", e);
