@@ -111,7 +111,7 @@ public class ConfigurationUtils {
     public static String substituteVariables(String value) {
         // Fix the issue #3, This method should not execute in doc generation phase. Need not substitute vaule.
         // Check the system property to identify the call is coming in doc generation phase.
-        if (Boolean.parseBoolean(System.getProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION))) {
+        if (Boolean.getBoolean(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION)) {
             return value;
         }
 
