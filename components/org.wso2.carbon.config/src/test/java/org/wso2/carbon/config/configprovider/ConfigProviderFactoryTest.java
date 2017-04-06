@@ -39,8 +39,8 @@ public class ConfigProviderFactoryTest {
     public static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
     public static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
     public static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
-    private SecureVault secureVault;
     private static final String PASSWORD = "n3wP4s5w0r4";
+    private SecureVault secureVault;
     private Path configPath;
 
     @BeforeTest

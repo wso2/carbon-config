@@ -48,7 +48,7 @@ public class ConfigProviderFactory {
      * @throws ConfigurationException if an error occurred while initializing the config provider.
      */
     public static ConfigProvider getConfigProvider(Path filePath) throws ConfigurationException {
-        return getConfigProvider(filePath, getSecureVaultService(filePath));
+        return getConfigProvider(filePath, getSecureVault(filePath));
     }
 
     /**
@@ -94,7 +94,7 @@ public class ConfigProviderFactory {
      * @param filePath configuration absolute filepath(e.g: {carbon-home}/conf/deployment.yaml})
      * @throws ConfigurationException if an error occurred while loading securevault service.
      */
-    private static SecureVault getSecureVaultService(Path filePath) throws ConfigurationException {
+    private static SecureVault getSecureVault(Path filePath) throws ConfigurationException {
         //check whether configuration filepath is null. proceed if not null.
         if (filePath == null || !filePath.toFile().exists()) {
             throw new ConfigurationException("Configuration filepath is not provided. configuration provider will " +

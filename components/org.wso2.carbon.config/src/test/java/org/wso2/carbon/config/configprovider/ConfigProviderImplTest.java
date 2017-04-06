@@ -57,8 +57,8 @@ public class ConfigProviderImplTest {
 
     private static Logger logger = LoggerFactory.getLogger(ConfigProviderImplTest.class.getName());
     private static final String PASSWORD = "n3wP4s5w0r4";
-    private SecureVault secureVault;
     private static final String CONFIG_NAMESPACE = "testconfiguration";
+    private SecureVault secureVault;
     private Path configPath;
 
     @BeforeTest
