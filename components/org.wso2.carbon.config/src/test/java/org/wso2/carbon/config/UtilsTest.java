@@ -112,16 +112,4 @@ public class UtilsTest {
         Assert.assertEquals(ConfigurationUtils.substituteVariables(config),
                 path + pathSeparator + "deployment" + pathSeparator);
     }
-
-    @Test
-    public void testFilePathExtension() {
-        Assert.assertEquals(ConfigurationUtils.getExtension("somefile.txt"),
-                "txt");
-        Assert.assertEquals(ConfigurationUtils.getExtension("somepath/somefile.txt"),
-                "txt");
-        Assert.assertEquals(ConfigurationUtils.getExtension("somefile.tar.gz"),
-                "tar.gz");
-        Assert.assertEquals(ConfigurationUtils.getExtension("somefile.JPEG"),
-                "JPEG");
-    }
 }

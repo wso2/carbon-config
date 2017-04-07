@@ -38,10 +38,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wso2.carbon.config</groupId>
             <artifactId>config-generator</artifactId>
             <version>${project.version}</version>
