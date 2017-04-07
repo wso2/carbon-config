@@ -250,7 +250,7 @@ object of the namespace, provided that configurations exist for the given namesp
   <plugins>
 …
       <plugin>
-          <<groupId>org.wso2.carbon.config</groupId>
+          <groupId>org.wso2.carbon.config</groupId>
           <artifactId>org.wso2.carbon.config.maven.plugin</artifactId>
           <executions>
               <execution>

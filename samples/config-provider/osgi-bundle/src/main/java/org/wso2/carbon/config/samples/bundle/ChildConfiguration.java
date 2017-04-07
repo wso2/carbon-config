@@ -24,12 +24,9 @@ import java.util.Locale;
 
 /**
  * Child configuration of the {@link ParentConfiguration}.
- * <p>
+ *
  * since 1.0.0
  */
-// In here do not specify the namespace since this configuration is a part of the
-// ParentConfiguration. Specifying the namespace will break this configuration to a separate
-// configuration under the section of the specified namespace
 @Configuration(description = "Child configuration")
 public class ChildConfiguration {
 
