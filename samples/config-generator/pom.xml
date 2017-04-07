@@ -25,7 +25,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>config-generator</artifactId>
-    <name>Configuration Doc generation sample</name>
+    <name>Carbon Configuration Document Generation Sample</name>
     <packaging>jar</packaging>
     <url>http://wso2.com</url>
     <dependencies>
