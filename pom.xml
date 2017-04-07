@@ -41,10 +41,9 @@
         <module>features/org.wso2.carbon.config.feature</module>
         <module>extensions/org.wso2.carbon.config.maven.plugin</module>
         <module>tests/org.wso2.carbon.config.test</module>
-        <module>samples/org.wso2.carbon.config.samples.configgeneration</module>
-        <module>samples/org.wso2.carbon.config.samples.common</module>
-        <module>samples/org.wso2.carbon.config.samples.standalone</module>
-        <module>samples/org.wso2.carbon.config.samples.osgi</module>
+        <module>samples/config-generator</module>
+        <module>samples/config-provider/osgi-bundle</module>
+        <module>samples/config-provider/standalone</module>
         <module>tests/org.wso2.carbon.config.test.coverage</module>
     </modules>
 
