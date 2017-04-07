@@ -227,7 +227,7 @@
         <commons.io.version>2.4.0.wso2v1</commons.io.version>
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
         <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
-        <testng.version>6.9.12</testng.version>
+        <testng.version>6.9.4</testng.version>
         <easy.mock.version>3.4</easy.mock.version>
         <org.jacoco.ant.version>0.7.5.201505241946</org.jacoco.ant.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
