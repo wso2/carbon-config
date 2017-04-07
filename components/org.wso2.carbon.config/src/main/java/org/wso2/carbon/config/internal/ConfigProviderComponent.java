@@ -26,10 +26,9 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.config.ConfigProviderFactory;
+import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.provider.ConfigProvider;
-import org.wso2.carbon.config.provider.ConfigProviderImpl;
-import org.wso2.carbon.config.reader.ConfigFileReader;
-import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.utils.Constants;
 import org.wso2.carbon.utils.Utils;
@@ -48,6 +47,7 @@ import java.nio.file.Paths;
 )
 public class ConfigProviderComponent {
     private static final Logger logger = LoggerFactory.getLogger(ConfigProviderComponent.class);
+    private SecureVault secureVault = null;
 
     @Activate
     protected void activate(BundleContext bundleContext) {
@@ -61,18 +61,18 @@ public class ConfigProviderComponent {
     }
 
     @Reference(
-            name = "org.wso2.carbon.secvault.securevault.SecureVault",
+            name = "org.wso2.carbon.secvault.SecureVault",
             service = SecureVault.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unRegisterSecureVault"
     )
     protected void registerSecureVault(SecureVault secureVault) {
-        ConfigProviderDataHolder.getInstance().setSecureVault(secureVault);
+        this.secureVault = secureVault;
     }
 
     protected void unRegisterSecureVault(SecureVault secureVault) {
-        ConfigProviderDataHolder.getInstance().setSecureVault(null);
+        this.secureVault = null;
     }
 
     /**
@@ -81,12 +81,14 @@ public class ConfigProviderComponent {
      * @param bundleContext OSGi Bundle Context
      */
     private void initializeConfigProvider(BundleContext bundleContext) {
-        // TODO: Support getting configProviderImpl in non-OSGi mode
-        Path deploymentConfigPath = Paths.get(Utils.getRuntimeConfigPath().toString(),
-                Constants.DEPLOYMENT_CONFIG_YAML);
-        ConfigFileReader configFileReader = new YAMLBasedConfigFileReader(deploymentConfigPath);
-        ConfigProvider configProvider = new ConfigProviderImpl(configFileReader);
-        bundleContext.registerService(ConfigProvider.class, configProvider, null);
-        logger.debug("ConfigProvider OSGi service registered");
+        try {
+            Path deploymentConfigPath = Paths.get(Utils.getRuntimeConfigPath().toString(),
+                    Constants.DEPLOYMENT_CONFIG_YAML);
+            ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(deploymentConfigPath, secureVault);
+            bundleContext.registerService(ConfigProvider.class, configProvider, null);
+            logger.debug("ConfigProvider OSGi service registered successfully");
+        } catch (ConfigurationException e) {
+            logger.error("Error occurred while initializing config provider" , e);
+        }
     }
 }

@@ -73,10 +73,6 @@
             <groupId>org.wso2.carbon.utils</groupId>
             <artifactId>carbon-utils</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-io.wso2</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
     </dependencies>
     <build>
         <plugins>

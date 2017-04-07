@@ -22,7 +22,6 @@ import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.ConfigurationRuntimeException;
 import org.wso2.carbon.config.ConfigurationUtils;
 import org.wso2.carbon.config.annotation.Configuration;
-import org.wso2.carbon.config.internal.ConfigProviderDataHolder;
 import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
@@ -53,6 +52,8 @@ public class ConfigProviderImpl implements ConfigProvider {
 
     private ConfigFileReader configFileReader;
 
+    private SecureVault secureVault;
+
     static {
         PLACEHOLDER_REGEX = "(.*?)(\\$\\{(" + getPlaceholderString() + "):([^,]+?)((,)(.+?))?\\})(.*?)";
         PLACEHOLDER_PATTERN = Pattern.compile(PLACEHOLDER_REGEX);
@@ -74,8 +75,9 @@ public class ConfigProviderImpl implements ConfigProvider {
         }
     }
 
-    public ConfigProviderImpl(ConfigFileReader configFileReader) {
+    public ConfigProviderImpl(ConfigFileReader configFileReader, SecureVault secureVault) {
         this.configFileReader = configFileReader;
+        this.secureVault = secureVault;
     }
 
     @Override
@@ -117,7 +119,7 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     @Override
-    public Map getConfigurationMap(String namespace) throws ConfigurationException {
+    public Object getConfigurationObject(String namespace) throws ConfigurationException {
         // lazy loading deployment.yaml configuration, if it is not exists
         loadDeploymentConfiguration(configFileReader);
         // check for json configuration from deployment configs of namespace.
@@ -126,7 +128,8 @@ public class ConfigProviderImpl implements ConfigProvider {
             String processedString = processPlaceholder(configString);
             processedString = ConfigurationUtils.substituteVariables(processedString);
             Yaml yaml = new Yaml();
-            return yaml.loadAs(processedString, Map.class);
+            // Fix the issue #17. return object can be a List or Map
+            return yaml.load(processedString);
         }
         logger.error("configuration doesn't exist for the namespace: {} in deployment yaml   . Hence " +
                 "return null object", namespace);
@@ -187,14 +190,10 @@ public class ConfigProviderImpl implements ConfigProvider {
                     break;
                 case "sec":
                     try {
-                        Optional<SecureVault> optionalSecureVault = ConfigProviderDataHolder.getInstance()
-                                .getSecureVault();
-                        if (optionalSecureVault.isPresent()) {
-                            String newValue = new String(optionalSecureVault.get().resolve(value));
-                            inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
-                        } else {
-                            throw new ConfigurationRuntimeException("Secure Vault service is not available");
-                        }
+                        SecureVault secureVault = getSecureVault().orElseThrow(() ->
+                                new ConfigurationRuntimeException("Secure Vault service is not available"));
+                        String newValue = new String(secureVault.resolve(value));
+                        inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
                     } catch (SecureVaultException e) {
                         throw new ConfigurationRuntimeException("Unable to resolve the given alias", e);
                     }
@@ -243,5 +242,9 @@ public class ConfigProviderImpl implements ConfigProvider {
         }
         logger.error(msg);
         throw new ConfigurationRuntimeException(msg);
+    }
+
+    private Optional<SecureVault> getSecureVault() {
+        return Optional.ofNullable(secureVault);
     }
 }
