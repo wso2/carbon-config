@@ -26,6 +26,7 @@ import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,25 +37,20 @@ import java.nio.file.Paths;
  * @since 1.0.0
  */
 public class ConfigProviderFactoryTest {
-    public static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
-    public static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
-    public static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
+    private static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
+    private static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
+    private static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
     private static final String PASSWORD = "n3wP4s5w0r4";
+    private static final String OS_NAME_KEY = "os.name";
+    private static final String WINDOWS_PARAM = "indow";
     private SecureVault secureVault;
     private Path configPath;
 
     @BeforeTest
-    public void setup() throws ConfigurationException {
-        if (configPath == null) {
-            URL resourceUrl = this.getClass().getClassLoader().getResource("conf");
-            if (resourceUrl == null) {
-                throw new ConfigurationException("Config path in resources not found");
-            }
-            configPath = Paths.get(resourceUrl.getPath());
-        }
-        System.setProperty(SYS_KEY_MASTER_KEY_FILE, configPath.resolve("master-keys.yaml").toString());
-        System.setProperty(SYS_KEY_SEC_PROP_FILE, configPath.resolve("secrets.properties").toString());
-        System.setProperty(SYS_KEY_KEYSTORE_FILE, configPath.resolve("wso2carbon.jks").toString());
+    public void setup() throws ConfigurationException, URISyntaxException {
+        System.setProperty(SYS_KEY_MASTER_KEY_FILE, getFilePath("conf", "master-keys.yaml").toString());
+        System.setProperty(SYS_KEY_SEC_PROP_FILE, getFilePath("conf", "secrets.properties").toString());
+        System.setProperty(SYS_KEY_KEYSTORE_FILE, getFilePath("conf", "wso2carbon.jks").toString());
 
         secureVault = EasyMock.mock(SecureVault.class);
         try {
@@ -83,26 +79,26 @@ public class ConfigProviderFactoryTest {
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No configuration filepath is provided." +
             " configuration provider will not be initialized!")
     public void incorrectFilePathTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(getFilePath("incorrectfilepath.yaml"), secureVault);
+        ConfigProviderFactory.getConfigProvider(getFilePath("conf", "incorrectfilepath.yaml"), secureVault);
     }
 
     @Test(description = "test case when securevault is not provided, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No securevault service found. " +
             "configuration provider will not be initialized!")
     public void secureVaultNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"), null);
+        ConfigProviderFactory.getConfigProvider(getFilePath("conf", "Example.yaml"), null);
     }
 
     @Test(description = "test case for xml configuration file")
     public void xmlConfigFileTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.xml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("conf", "Example.xml"),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for yaml configuration file")
     public void yamlConfigFileTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("conf", "Example.yaml"),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
@@ -111,14 +107,15 @@ public class ConfigProviderFactoryTest {
             expectedExceptionsMessageRegExp = "Error while initializing configuration provider, file extension is not" +
                     " supported")
     public void invalidConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(getFilePath("Example.txt"),
+        ConfigProviderFactory.getConfigProvider(getFilePath("conf", "Example.txt"),
                 secureVault);
     }
 
     @Test(description = "test case for config provider when securevault is not predefined. yaml configuration file " +
             "contains securevault configuration")
     public void secureVaultNotPredefinedTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("deployment.yaml"));
+
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("conf", "deployment.yaml"));
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
         TestConfiguration testConfiguration = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertEquals(testConfiguration.getTenant(), "tenant");
@@ -130,11 +127,16 @@ public class ConfigProviderFactoryTest {
      * @param fileName name of the file
      * @return file path
      */
-    private Path getFilePath(String fileName) {
-        URL resourceURL = this.getClass().getClassLoader().getResource("conf");
-        if (resourceURL == null) {
-            throw new RuntimeException("Resource path not found");
+    private Path getFilePath(String... fileName) {
+        URL resourceURL = this.getClass().getClassLoader().getResource("");
+        if (resourceURL != null) {
+            String resourcePath = resourceURL.getPath();
+            if (resourcePath != null) {
+                resourcePath = System.getProperty(OS_NAME_KEY).contains(WINDOWS_PARAM) ?
+                        resourcePath.substring(1) : resourcePath;
+                return Paths.get(resourcePath, fileName);
+            }
         }
-        return Paths.get(resourceURL.getPath(), fileName);
+        return null;
     }
 }

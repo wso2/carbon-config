@@ -84,7 +84,7 @@ public class ConfigurationUtils {
     }
 
     /**
-     * This method reads project properties in resource file,
+     * This method reads project properties in resource file.
      *
      * @return project properties
      */
