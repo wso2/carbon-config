@@ -15,9 +15,6 @@
  */
 package org.wso2.carbon.config;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.XML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -43,25 +40,6 @@ public class ConfigurationUtils {
     private static final Pattern varPattern = Pattern.compile("\\$\\{([^}]*)}");
 
     private ConfigurationUtils() {
-    }
-
-    /**
-     * This method converts a given XML String to YAML format.
-     *
-     * @param xmlString XML String that needs to be converted to YAML format
-     * @return String in YAML format
-     */
-    public static String convertXMLToYAML(String xmlString) {
-        String jsonString;
-        try {
-            JSONObject xmlJSONObj = XML.toJSONObject(xmlString);
-            jsonString = xmlJSONObj.toString();
-            Yaml yaml = new Yaml();
-            Map map = yaml.loadAs(jsonString, Map.class);
-            return yaml.dumpAsMap(map);
-        } catch (JSONException e) {
-            throw new RuntimeException("Exception occurred while converting XML to JSON: ", e);
-        }
     }
 
     /**

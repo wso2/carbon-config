@@ -52,10 +52,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.json.wso2</groupId>
-            <artifactId>json</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
         </dependency>
@@ -131,8 +127,7 @@
             org.wso2.carbon.secvault.*;version="${carbon.securevault.version.range}",
             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
             org.osgi.framework.*;version="${osgi.framework.package.import.version.range}",
-            org.yaml.snakeyaml.*;version="${org.snakeyaml.package.import.version.range}",
-            org.json.*;version="${org.json.import.version}"
+            org.yaml.snakeyaml.*;version="${org.snakeyaml.package.import.version.range}"
         </import.package>
     </properties>
 </project>
