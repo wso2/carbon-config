@@ -204,7 +204,7 @@
         <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
 
         <!-- Carbon Secure Vault version -->
-        <carbon.config.version>2.0.0-SNAPSHOT</carbon.config.version>
+        <carbon.config.version>${project.version}</carbon.config.version>
         <carbon.config.package.import.version.range>[2.0.0, 3.0.0)</carbon.config.package.import.version.range>
 
         <!-- Carbon components -->
