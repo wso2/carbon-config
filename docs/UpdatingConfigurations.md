@@ -230,14 +230,15 @@ object of the namespace, provided that configurations exist for the given namesp
 
 ## Step 3: Building the Carbon feature
 
-1. Add the Carbon core dependency to the component's POM file. This is to get the custom annotations defined in `carbon.core`.
+1. Add the Carbon config dependency to the component's POM file. This is to get the custom annotations defined in 
+`carbon.config`.
 
  ```xml
  <dependencies>
  …
    <dependency>
-      <groupId>org.wso2.carbon</groupId>
-      <artifactId>org.wso2.carbon.core</artifactId>
+       <groupId>org.wso2.carbon.config</groupId>
+       <artifactId>org.wso2.carbon.config</artifactId>
    </dependency>
 …
 </dependencies>
