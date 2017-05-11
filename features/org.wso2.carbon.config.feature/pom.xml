@@ -56,7 +56,7 @@
                             <bundles>
                                 <bundle>
                                     <symbolicName>org.wso2.carbon.config</symbolicName>
-                                    <version>${project.version}</version>
+                                    <version>${carbon.config.version}</version>
                                 </bundle>
                             </bundles>
                             <importFeatures>
