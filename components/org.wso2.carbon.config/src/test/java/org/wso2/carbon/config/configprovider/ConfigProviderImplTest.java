@@ -35,9 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -54,8 +52,6 @@ public class ConfigProviderImplTest {
     private static Logger logger = LoggerFactory.getLogger(ConfigProviderImplTest.class.getName());
     private static final String PASSWORD = "n3wP4s5w0r4";
     private static final String CONFIG_NAMESPACE = "testconfiguration";
-    private static final String OS_NAME_KEY = "os.name";
-    private static final String WINDOWS_PARAM = "indow";
     private SecureVault secureVault;
 
     @BeforeTest
@@ -72,7 +68,7 @@ public class ConfigProviderImplTest {
 
     @Test(description = "This test will test functionality when using yaml config file")
     public void yamlFileConfigObjectTestCase() throws IOException {
-        Path resourcePath = getFilePath("conf", "Example.yaml");
+        Path resourcePath = TestUtils.getResourcePath("conf", "Example.yaml").get();
         File file = resourcePath.toFile();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             Yaml yaml = new Yaml();
@@ -109,7 +105,8 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("conf", "Example.yaml"));
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
@@ -142,7 +139,7 @@ public class ConfigProviderImplTest {
 
     @Test(description = "This test will test functionality when using yaml config file and configuration map")
     public void yamlFileConfigMapTestCase() throws IOException {
-        Path resourcePath = getFilePath("conf", "Example.yaml");
+        Path resourcePath = TestUtils.getResourcePath("conf", "Example.yaml").get();
         File file = resourcePath.toFile();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             Yaml yaml = new Yaml();
@@ -179,7 +176,8 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("conf", "Example.yaml"));
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             Map configurationMap = (Map) configProvider.getConfigurationObject(CONFIG_NAMESPACE);
 
@@ -215,7 +213,8 @@ public class ConfigProviderImplTest {
     }
 
     public void yamlConfigSequenceTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("conf", "sampledatasource.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "sampledatasource.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         List<Map<String, String>> datasources = (List<Map<String, String>>) configProvider.getConfigurationObject
                 ("wso2.datasources");
@@ -228,7 +227,8 @@ public class ConfigProviderImplTest {
     @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when yaml config file not found")
     public void yamlFileNotFoundTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("conf", "Example1.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "Example1.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -237,7 +237,8 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration map")
     public void invalidYAMLConfigMapTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("conf", "invalidconfiguration.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "invalidconfiguration.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         Map configurationMap = (Map) configProvider.getConfigurationObject("configurations");
         Assert.assertNull(configurationMap, "configurations map should be null, " +
@@ -247,7 +248,8 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration object")
     public void invalidYAMLConfigObjectTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("conf", "invalidconfiguration.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "invalidconfiguration.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
@@ -265,7 +267,8 @@ public class ConfigProviderImplTest {
                     "configuration object")
     public void yamlConfigWithoutSystemValueTestCase() throws ConfigurationException {
         ConfigFileReader fileReader =
-                new YAMLBasedConfigFileReader(getFilePath("conf", "systemconfigwithoutdefaults.yaml"));
+                new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "systemconfigwithoutdefaults.yaml")
+                        .get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -276,29 +279,11 @@ public class ConfigProviderImplTest {
                     "configuration object")
     public void yamlConfigWithoutEnvValueTestCase() throws ConfigurationException {
         ConfigFileReader fileReader =
-                new YAMLBasedConfigFileReader(getFilePath("conf", "envconfigwithoutdefaults.yaml"));
+                new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "envconfigwithoutdefaults.yaml")
+                        .get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
-    }
-
-    /**
-     * Get file from resources.
-     *
-     * @param fileName name of the file
-     * @return file path
-     */
-    private Path getFilePath(String... fileName) {
-        URL resourceURL = this.getClass().getClassLoader().getResource("");
-        if (resourceURL != null) {
-            String resourcePath = resourceURL.getPath();
-            if (resourcePath != null) {
-                resourcePath = System.getProperty(OS_NAME_KEY).contains(WINDOWS_PARAM) ?
-                        resourcePath.substring(1) : resourcePath;
-                return Paths.get(resourcePath, fileName);
-            }
-        }
-        return null;
     }
 
     /**
