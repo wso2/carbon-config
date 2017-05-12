@@ -25,7 +25,6 @@ import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.config.provider.ConfigProviderImpl;
 import org.wso2.carbon.config.reader.ConfigFileReader;
-import org.wso2.carbon.config.reader.XMLBasedConfigFileReader;
 import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
 import org.wso2.carbon.secvault.SecureVault;
@@ -42,9 +41,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 /**
  * This class is to demonstrate the sample uses of the ConfigProvider.
@@ -69,153 +65,6 @@ public class ConfigProviderImplTest {
         }
         EasyMock.replay(secureVault);
     }
-
-    @Test(description = "This test will test functionality when using xml config file")
-    public void xmlFileConfigObjectTestCase() throws IOException, SecureVaultException {
-        try {
-            Path resourcePath = TestUtils.getResourcePath("conf", "Example.xml").get();
-            File file = resourcePath.toFile();
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(TestConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            TestConfiguration configurations = (TestConfiguration) unmarshaller.unmarshal(file);
-
-            //Transport 1
-            Assert.assertEquals(configurations.getTenant(), "tenant");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getName(), "abc");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPort(), 8000);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).isSecure(), "false");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getDesc(),
-                    "This transport will use 8000 as its port");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPassword(),
-                    "${sec:conn.auth.password}");
-
-            //Transport 2
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getName(), "pqr");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getPort(), 0);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).isSecure(), "${sys:pqr.secure}");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getDesc(),
-                    "This transport will use ${env:pqr.http.port} as its port. Secure - ${sys:pqr.secure}");
-            //Transport 3
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getName(), "xyz");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getPort(), 0);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(),
-                    "${sys:xyz.secure,true}");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
-                    "This transport will use ${env:xyz.http.port,8888} as its port");
-
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
-                    ".xml").get());
-            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-            configurations = configProvider.getConfigurationObject(TestConfiguration.class);
-
-            //Transport 1
-            Assert.assertEquals(configurations.getTenant(), "tenant");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getName(), "abc");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPort(), 8000);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).isSecure(), "false");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getDesc(),
-                    "This transport will use 8000 as its port");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPassword(), PASSWORD);
-
-            //Transport 2
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getName(), "pqr");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getPort(), 8501);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).isSecure(), "true");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getDesc(),
-                    "This transport will use 8501 as its port. Secure - true");
-            //Transport 3
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getName(), "xyz");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getPort(), 9000);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(), "true");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
-                    "This transport will use 8888 as its port");
-        } catch (JAXBException | ConfigurationException e) {
-            logger.error(e.toString(), e);
-            Assert.fail();
-        }
-    }
-
-    @Test(description = "This test will test functionality when using xml config file and configuration map")
-    public void xmlFileConfigMapTestCase() throws IOException, SecureVaultException {
-        try {
-            Path resourcePath = TestUtils.getResourcePath("conf", "Example.xml").get();
-            File file = resourcePath.toFile();
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(TestConfiguration.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            TestConfiguration configurations = (TestConfiguration) unmarshaller.unmarshal(file);
-
-            //Transport 1
-            Assert.assertEquals(configurations.getTenant(), "tenant");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getName(), "abc");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPort(), 8000);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).isSecure(), "false");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getDesc(),
-                    "This transport will use 8000 as its port");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPassword(),
-                    "${sec:conn.auth.password}");
-
-            //Transport 2
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getName(), "pqr");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getPort(), 0);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).isSecure(), "${sys:pqr.secure}");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getDesc(),
-                    "This transport will use ${env:pqr.http.port} as its port. Secure - ${sys:pqr.secure}");
-            //Transport 3
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getName(), "xyz");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getPort(), 0);
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(),
-                    "${sys:xyz.secure,true}");
-            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
-                    "This transport will use ${env:xyz.http.port,8888} as its port");
-
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
-                    ".xml").get());
-            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-            Map configurationMap = (Map) configProvider.getConfigurationObject(CONFIG_NAMESPACE);
-
-            Map transportsMap = (Map) configurationMap.get("transports");
-            ArrayList transportList = (ArrayList) transportsMap.get("transport");
-            LinkedHashMap transport1 = (LinkedHashMap) transportList.get(0);
-            LinkedHashMap transport2 = (LinkedHashMap) transportList.get(1);
-            LinkedHashMap transport3 = (LinkedHashMap) transportList.get(2);
-
-            Assert.assertEquals(configurationMap.get("tenant"), "tenant");
-            //Transport 1
-            Assert.assertEquals(transport1.get("name"), "abc");
-            Assert.assertEquals(transport1.get("port"), 8000);
-            Assert.assertEquals(transport1.get("secure"), false);
-            Assert.assertEquals(transport1.get("desc"), "This transport will use 8000 as its port");
-            Assert.assertEquals(transport1.get("password"), PASSWORD);
-            //Transport 2
-            Assert.assertEquals(transport2.get("name"), "pqr");
-            Assert.assertEquals(transport2.get("port"), 8501);
-            Assert.assertEquals(transport2.get("secure"), true);
-            Assert.assertEquals(transport2.get("desc"),
-                    "This transport will use 8501 as its port. Secure - true");
-            //Transport 3
-            Assert.assertEquals(transport3.get("name"), "xyz");
-            Assert.assertEquals(transport3.get("port"), 9000);
-            Assert.assertEquals(transport3.get("secure"), true);
-            Assert.assertEquals(transport3.get("desc"),
-                    "This transport will use 8888 as its port");
-        } catch (JAXBException | ConfigurationException e) {
-            logger.error(e.toString(), e);
-            Assert.fail();
-        }
-    }
-
-    @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
-            "when xml config file not found")
-    public void xmlFileNotFoundTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new XMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example1.xml")
-                .get());
-        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
-        TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
-        Assert.assertNull(configurations, "configurations object should be null");
-    }
-
 
     @Test(description = "This test will test functionality when using yaml config file")
     public void yamlFileConfigObjectTestCase() throws IOException {

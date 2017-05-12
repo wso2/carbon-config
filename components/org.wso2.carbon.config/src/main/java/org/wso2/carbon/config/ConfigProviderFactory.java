@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.config.provider.ConfigProviderImpl;
 import org.wso2.carbon.config.reader.ConfigFileReader;
-import org.wso2.carbon.config.reader.XMLBasedConfigFileReader;
 import org.wso2.carbon.config.reader.YAMLBasedConfigFileReader;
 import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.secvault.SecureVaultFactory;
@@ -37,7 +36,6 @@ import java.nio.file.Path;
 public class ConfigProviderFactory {
 
     private static final String YAML_EXTENSION = ".yaml";
-    private static final String XML_EXTENSION = ".xml";
     private static Logger logger = LoggerFactory.getLogger(ConfigProviderFactory.class);
 
     /**
@@ -79,8 +77,6 @@ public class ConfigProviderFactory {
         ConfigFileReader configFileReader;
         if (filePath.toString().endsWith(YAML_EXTENSION)) {
             configFileReader = new YAMLBasedConfigFileReader(filePath);
-        } else if (filePath.toString().endsWith(XML_EXTENSION)) {
-            configFileReader = new XMLBasedConfigFileReader(filePath);
         } else {
             throw new ConfigurationException("Error while initializing configuration provider, file extension is not " +
                     "supported");

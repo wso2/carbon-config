@@ -88,12 +88,11 @@ public class ConfigProviderFactoryTest {
         ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf", "Example.yaml").get(), null);
     }
 
-    @Test(description = "test case for xml configuration file")
+    @Test(description = "test case for xml configuration file", expectedExceptions = ConfigurationException.class)
     public void xmlConfigFileTestCase() throws ConfigurationException {
         ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf",
                 "Example.xml").get(),
                 secureVault);
-        Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for yaml configuration file")

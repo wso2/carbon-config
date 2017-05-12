@@ -25,7 +25,7 @@
     <artifactId>carbon-config</artifactId>
     <name>Carbon Configuration Parent</name>
     <packaging>pom</packaging>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
 
     <scm>
         <url>https://github.com/wso2/carbon-config.git</url>
@@ -50,7 +50,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.config</groupId>
                 <artifactId>org.wso2.carbon.config</artifactId>
-                <version>${project.version}</version>
+                <version>${carbon.config.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -61,11 +61,6 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${org.snakeyaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.json.wso2</groupId>
-                <artifactId>json</artifactId>
-                <version>${org.json.import.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io.wso2</groupId>
@@ -209,19 +204,18 @@
         <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
 
         <!-- Carbon Secure Vault version -->
-        <carbon.config.package.export.version>1.0.0</carbon.config.package.export.version>
-        <carbon.config.package.import.version.range>[1.0.0, 2.0.0)</carbon.config.package.import.version.range>
+        <carbon.config.version>2.0.0-SNAPSHOT</carbon.config.version>
+        <carbon.config.package.import.version.range>[2.0.0, 3.0.0)</carbon.config.package.import.version.range>
 
         <!-- Carbon components -->
-        <carbon.securevault.version>5.0.1</carbon.securevault.version>
+        <carbon.securevault.version>5.0.3</carbon.securevault.version>
         <carbon.securevault.version.range>[5.0.0, 6.0.0)</carbon.securevault.version.range>
-        <carbon.utils.version>1.1.0</carbon.utils.version>
+        <carbon.utils.version>1.2.1</carbon.utils.version>
         <carbon.utils.package.import.version.range>[1.0.0, 2.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>
         <org.snakeyaml.version>1.17</org.snakeyaml.version>
-        <org.json.import.version>3.0.0.wso2v1</org.json.import.version>
         <commons.io.version>2.4.0.wso2v1</commons.io.version>
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
         <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
