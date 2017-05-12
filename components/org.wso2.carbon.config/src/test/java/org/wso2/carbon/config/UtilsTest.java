@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
 
 /**
- * This class tests the functionality of ConfigurationUtils class
+ * This class tests the functionality of ConfigurationUtils class.
  *
  * @since 1.0.0
  */

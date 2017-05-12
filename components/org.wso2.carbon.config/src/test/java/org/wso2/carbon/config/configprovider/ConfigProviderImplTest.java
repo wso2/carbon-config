@@ -36,9 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -59,19 +57,10 @@ public class ConfigProviderImplTest {
     private static final String PASSWORD = "n3wP4s5w0r4";
     private static final String CONFIG_NAMESPACE = "testconfiguration";
     private SecureVault secureVault;
-    private Path configPath;
 
     @BeforeTest
     public void setup() throws ConfigurationException {
         setUpEnvironment();
-        if (configPath == null) {
-            URL resourceUrl = this.getClass().getClassLoader().getResource("conf");
-            if (resourceUrl == null) {
-                throw new ConfigurationException("Config path in resources not found");
-            }
-            configPath = Paths.get(resourceUrl.getPath());
-        }
-
         secureVault = EasyMock.mock(SecureVault.class);
         try {
             EasyMock.expect(secureVault.resolve(EasyMock.anyString())).andReturn(PASSWORD.toCharArray()).anyTimes();
@@ -84,7 +73,7 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when using xml config file")
     public void xmlFileConfigObjectTestCase() throws IOException, SecureVaultException {
         try {
-            Path resourcePath = configPath.resolve("Example.xml");
+            Path resourcePath = TestUtils.getResourcePath("conf", "Example.xml").get();
             File file = resourcePath.toFile();
 
             JAXBContext jaxbContext = JAXBContext.newInstance(TestConfiguration.class);
@@ -115,7 +104,8 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use ${env:xyz.http.port,8888} as its port");
 
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".xml").get());
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
@@ -149,7 +139,7 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when using xml config file and configuration map")
     public void xmlFileConfigMapTestCase() throws IOException, SecureVaultException {
         try {
-            Path resourcePath = configPath.resolve("Example.xml");
+            Path resourcePath = TestUtils.getResourcePath("conf", "Example.xml").get();
             File file = resourcePath.toFile();
 
             JAXBContext jaxbContext = JAXBContext.newInstance(TestConfiguration.class);
@@ -180,7 +170,8 @@ public class ConfigProviderImplTest {
             Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
                     "This transport will use ${env:xyz.http.port,8888} as its port");
 
-            ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example.xml"));
+            ConfigFileReader fileReader = new XMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".xml").get());
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             Map configurationMap = (Map) configProvider.getConfigurationObject(CONFIG_NAMESPACE);
 
@@ -218,7 +209,8 @@ public class ConfigProviderImplTest {
     @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when xml config file not found")
     public void xmlFileNotFoundTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new XMLBasedConfigFileReader(getFilePath("Example1.xml"));
+        ConfigFileReader fileReader = new XMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example1.xml")
+                .get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -227,7 +219,7 @@ public class ConfigProviderImplTest {
 
     @Test(description = "This test will test functionality when using yaml config file")
     public void yamlFileConfigObjectTestCase() throws IOException {
-        Path resourcePath = configPath.resolve("Example.yaml");
+        Path resourcePath = TestUtils.getResourcePath("conf", "Example.yaml").get();
         File file = resourcePath.toFile();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             Yaml yaml = new Yaml();
@@ -264,7 +256,8 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
@@ -297,7 +290,7 @@ public class ConfigProviderImplTest {
 
     @Test(description = "This test will test functionality when using yaml config file and configuration map")
     public void yamlFileConfigMapTestCase() throws IOException {
-        Path resourcePath = configPath.resolve("Example.yaml");
+        Path resourcePath = TestUtils.getResourcePath("conf", "Example.yaml").get();
         File file = resourcePath.toFile();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             Yaml yaml = new Yaml();
@@ -334,7 +327,8 @@ public class ConfigProviderImplTest {
         }
 
         try {
-            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example.yaml"));
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
             ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
             Map configurationMap = (Map) configProvider.getConfigurationObject(CONFIG_NAMESPACE);
 
@@ -370,7 +364,8 @@ public class ConfigProviderImplTest {
     }
 
     public void yamlConfigSequenceTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("sampledatasource.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "sampledatasource.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         List<Map<String, String>> datasources = (List<Map<String, String>>) configProvider.getConfigurationObject
                 ("wso2.datasources");
@@ -383,7 +378,8 @@ public class ConfigProviderImplTest {
     @Test(expectedExceptions = ConfigurationException.class, description = "This test will test functionality " +
             "when yaml config file not found")
     public void yamlFileNotFoundTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("Example1.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "Example1.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -392,7 +388,8 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration map")
     public void invalidYAMLConfigMapTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "invalidconfiguration.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         Map configurationMap = (Map) configProvider.getConfigurationObject("configurations");
         Assert.assertNull(configurationMap, "configurations map should be null, " +
@@ -402,7 +399,8 @@ public class ConfigProviderImplTest {
     @Test(description = "This test will test functionality when configurations are not found in yaml file and " +
             "configuration object")
     public void invalidYAMLConfigObjectTestCase() throws ConfigurationException {
-        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(getFilePath("invalidconfiguration.yaml"));
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "invalidconfiguration.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
 
@@ -420,7 +418,8 @@ public class ConfigProviderImplTest {
                     "configuration object")
     public void yamlConfigWithoutSystemValueTestCase() throws ConfigurationException {
         ConfigFileReader fileReader =
-                new YAMLBasedConfigFileReader(getFilePath("systemconfigwithoutdefaults.yaml"));
+                new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "systemconfigwithoutdefaults.yaml")
+                        .get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
@@ -431,24 +430,11 @@ public class ConfigProviderImplTest {
                     "configuration object")
     public void yamlConfigWithoutEnvValueTestCase() throws ConfigurationException {
         ConfigFileReader fileReader =
-                new YAMLBasedConfigFileReader(getFilePath("envconfigwithoutdefaults.yaml"));
+                new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "envconfigwithoutdefaults.yaml")
+                        .get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
-    }
-
-    /**
-     * Get file from resources.
-     *
-     * @param fileName name of the file
-     * @return file path
-     */
-    private Path getFilePath(String fileName) {
-        URL resourceURL = this.getClass().getClassLoader().getResource("conf");
-        if (resourceURL == null) {
-            throw new RuntimeException("Resource path not found");
-        }
-        return Paths.get(resourceURL.getPath(), fileName);
     }
 
     /**

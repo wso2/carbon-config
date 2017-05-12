@@ -26,9 +26,8 @@ import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * This class is to test uses of the ConfigProviderFactory.
@@ -36,25 +35,20 @@ import java.nio.file.Paths;
  * @since 1.0.0
  */
 public class ConfigProviderFactoryTest {
-    public static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
-    public static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
-    public static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
+    private static final String SYS_KEY_MASTER_KEY_FILE = "master.key.file";
+    private static final String SYS_KEY_SEC_PROP_FILE = "sec.prop.file";
+    private static final String SYS_KEY_KEYSTORE_FILE = "keystore.file";
     private static final String PASSWORD = "n3wP4s5w0r4";
     private SecureVault secureVault;
     private Path configPath;
 
     @BeforeTest
-    public void setup() throws ConfigurationException {
-        if (configPath == null) {
-            URL resourceUrl = this.getClass().getClassLoader().getResource("conf");
-            if (resourceUrl == null) {
-                throw new ConfigurationException("Config path in resources not found");
-            }
-            configPath = Paths.get(resourceUrl.getPath());
-        }
-        System.setProperty(SYS_KEY_MASTER_KEY_FILE, configPath.resolve("master-keys.yaml").toString());
-        System.setProperty(SYS_KEY_SEC_PROP_FILE, configPath.resolve("secrets.properties").toString());
-        System.setProperty(SYS_KEY_KEYSTORE_FILE, configPath.resolve("wso2carbon.jks").toString());
+    public void setup() throws ConfigurationException, URISyntaxException {
+        System.setProperty(SYS_KEY_MASTER_KEY_FILE, TestUtils.getResourcePath("conf", "master-keys.yaml").get()
+                .toString());
+        System.setProperty(SYS_KEY_SEC_PROP_FILE, TestUtils.getResourcePath("conf", "secrets.properties").get()
+                .toString());
+        System.setProperty(SYS_KEY_KEYSTORE_FILE, TestUtils.getResourcePath("conf", "wso2carbon.jks").get().toString());
 
         secureVault = EasyMock.mock(SecureVault.class);
         try {
@@ -83,26 +77,29 @@ public class ConfigProviderFactoryTest {
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No configuration filepath is provided." +
             " configuration provider will not be initialized!")
     public void incorrectFilePathTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(getFilePath("incorrectfilepath.yaml"), secureVault);
+        ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf", "incorrectfilepath.yaml").get(),
+                secureVault);
     }
 
     @Test(description = "test case when securevault is not provided, when getting config provider", expectedExceptions
             = ConfigurationException.class, expectedExceptionsMessageRegExp = "No securevault service found. " +
             "configuration provider will not be initialized!")
     public void secureVaultNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"), null);
+        ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf", "Example.yaml").get(), null);
     }
 
     @Test(description = "test case for xml configuration file")
     public void xmlConfigFileTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.xml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf",
+                "Example.xml").get(),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
 
     @Test(description = "test case for yaml configuration file")
     public void yamlConfigFileTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("Example.yaml"),
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf",
+                "Example.yaml").get(),
                 secureVault);
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
     }
@@ -111,30 +108,20 @@ public class ConfigProviderFactoryTest {
             expectedExceptionsMessageRegExp = "Error while initializing configuration provider, file extension is not" +
                     " supported")
     public void invalidConfigFileTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(getFilePath("Example.txt"),
+        ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf", "Example.txt").get(),
                 secureVault);
     }
 
     @Test(description = "test case for config provider when securevault is not predefined. yaml configuration file " +
             "contains securevault configuration")
     public void secureVaultNotPredefinedTestCase() throws ConfigurationException {
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(getFilePath("deployment.yaml"));
+
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf",
+                "deployment.yaml").get());
         Assert.assertNotNull(configProvider, "Configuration provider cannot be null");
         TestConfiguration testConfiguration = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertEquals(testConfiguration.getTenant(), "tenant");
     }
 
-    /**
-     * Get file from resources.
-     *
-     * @param fileName name of the file
-     * @return file path
-     */
-    private Path getFilePath(String fileName) {
-        URL resourceURL = this.getClass().getClassLoader().getResource("conf");
-        if (resourceURL == null) {
-            throw new RuntimeException("Resource path not found");
-        }
-        return Paths.get(resourceURL.getPath(), fileName);
-    }
+
 }

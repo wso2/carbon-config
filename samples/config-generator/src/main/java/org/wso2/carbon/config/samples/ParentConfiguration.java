@@ -24,7 +24,7 @@ import org.wso2.carbon.config.annotation.Ignore;
 import java.util.Locale;
 
 /**
- * Parent configuration class
+ * Parent configuration class.
  *
  * @since 1.0.0
  */
