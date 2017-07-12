@@ -36,6 +36,11 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.api.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon.config</groupId>
             <artifactId>config-generator</artifactId>
             <version>${project.version}</version>
@@ -75,4 +80,8 @@
             </plugin>
         </plugins>
     </build>
+
+    <properties>
+        <slf4j.log4j12.version>1.7.13</slf4j.log4j12.version>
+    </properties>
 </project>
