@@ -211,7 +211,7 @@
         <carbon.securevault.version>5.0.8</carbon.securevault.version>
         <carbon.securevault.version.range>[5.0.0, 6.0.0)</carbon.securevault.version.range>
         <carbon.utils.version>2.0.2</carbon.utils.version>
-        <carbon.utils.package.import.version.range>[2.0.0, 2.0.0)</carbon.utils.package.import.version.range>
+        <carbon.utils.package.import.version.range>[2.0.0, 3.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>
