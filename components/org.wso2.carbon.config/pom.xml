@@ -54,10 +54,12 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.secvault</groupId>
