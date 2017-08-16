@@ -67,8 +67,7 @@ public class ConfigProviderFactory {
         }
         //check whether securevault is null. proceed if not null.
         if (secureVault == null) {
-            throw new ConfigurationException("No securevault service found. configuration provider will not be " +
-                    "initialized!");
+            logger.debug("No securevault service found. configuration provider will not be initialized!");
         }
         if (logger.isDebugEnabled()) {
             logger.debug("initialize config provider instance from configuration file: " + filePath.toString());
