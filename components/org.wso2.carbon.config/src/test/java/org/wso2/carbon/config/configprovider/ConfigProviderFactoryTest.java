@@ -81,11 +81,11 @@ public class ConfigProviderFactoryTest {
                 secureVault);
     }
 
-    @Test(description = "test case when securevault is not provided, when getting config provider", expectedExceptions
-            = ConfigurationException.class, expectedExceptionsMessageRegExp = "No securevault service found. " +
-            "configuration provider will not be initialized!")
+    @Test(description = "test case when securevault is not provided, when getting config provider")
     public void secureVaultNotProvidedTestCase() throws ConfigurationException {
-        ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf", "Example.yaml").get(), null);
+        Assert.assertNotNull(
+                ConfigProviderFactory.getConfigProvider(TestUtils.getResourcePath("conf", "Example.yaml").get(), null),
+                "Couldn't initialize ConfigProvider without Secvault");
     }
 
     @Test(description = "test case for xml configuration file", expectedExceptions = ConfigurationException.class)
