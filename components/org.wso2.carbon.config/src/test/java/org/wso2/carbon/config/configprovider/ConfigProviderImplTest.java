@@ -52,6 +52,8 @@ public class ConfigProviderImplTest {
     private static Logger logger = LoggerFactory.getLogger(ConfigProviderImplTest.class.getName());
     private static final String PASSWORD = "n3wP4s5w0r4";
     private static final String CONFIG_NAMESPACE = "testconfiguration";
+    private static final String CONFIG_PREFIX = "WSO2";
+    private static final String CONFIG_LEVEL_SEPARATOR = "_";
     private SecureVault secureVault;
 
     @BeforeTest
@@ -284,6 +286,216 @@ public class ConfigProviderImplTest {
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
         Assert.assertNull(configurations, "configurations object should be null");
+    }
+
+    @Test(description = "Tests the functionality when deployment configuration is overridden with the environment " +
+                        "variables - primitive values")
+    public void yamlConfigOverrideWithEnvVariablesPrimitive() throws ConfigurationException {
+        String newTenantName = "NewTenant";
+        String envVariable = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                             "TENANT";
+        EnvironmentUtils.setEnv(envVariable, newTenantName);
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "envconfigoverride.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+        TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
+        Assert.assertEquals(configurations.getTenant(), newTenantName);
+        EnvironmentUtils.unsetEnv(envVariable);
+    }
+
+    @Test(description = "Tests the functionality when deployment configuration is overridden with the environment " +
+                        "variables - complex values")
+    public void yamlConfigOverrideWithEnvVariablesComplex() throws ConfigurationException {
+        String envVariable1Name = "TestBeanName";
+        String envVariable2Name = "ComplexBeanName";
+        String envVariable3Name = "ComplexBeanTestBeanName";
+        String envVariable1 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + "BASICTESTCONFIGURATION" +
+                              CONFIG_LEVEL_SEPARATOR + "TESTBEAN_NAME";
+        String envVariable2 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + "BASICTESTCONFIGURATION" +
+                              CONFIG_LEVEL_SEPARATOR + "COMPLEXTESTBEAN_NAME";
+        String envVariable3 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + "BASICTESTCONFIGURATION" +
+                              CONFIG_LEVEL_SEPARATOR + "COMPLEXTESTBEAN_TESTBEAN_NAME";
+        EnvironmentUtils.setEnv(envVariable1, envVariable1Name);
+        EnvironmentUtils.setEnv(envVariable2, envVariable2Name);
+        EnvironmentUtils.setEnv(envVariable3, envVariable3Name);
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "envconfigoverridecomplex.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+        BasicTestConfiguration configurations = configProvider.getConfigurationObject(BasicTestConfiguration.class);
+        Assert.assertEquals(configurations.getTestBean().getName(), envVariable1Name);
+        Assert.assertEquals(configurations.getComplexTestBean().getName(), envVariable2Name);
+        Assert.assertEquals(configurations.getComplexTestBean().getTestBean().getName(), envVariable3Name);
+        EnvironmentUtils.unsetEnv(envVariable1);
+        EnvironmentUtils.unsetEnv(envVariable2);
+        EnvironmentUtils.unsetEnv(envVariable3);
+    }
+
+    @Test(description = "Tests the functionality when deployment configuration is overridden with the environment " +
+                        "variables - array type")
+    public void yamlConfigOverrideWithEnvVariablesArray() throws ConfigurationException {
+        // Transport 1
+        String transport1Name = "abc";
+        int transport1Port = 8005;
+        String transport1Secure = "true";
+        String transport1Desc = "Transport 1 description";
+        String transport1Password = "password";
+
+        String transport1NameEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                                   "TRANSPORTS_TRANSPORT_0_NAME";
+        String transport1PortEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                                   "TRANSPORTS_TRANSPORT_0_PORT";
+        String transport1SecureEnv =
+                CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                "TRANSPORTS_TRANSPORT_0_SECURE";
+        String transport1DescEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                                   "TRANSPORTS_TRANSPORT_0_DESC";
+        String transport1PasswordEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE +
+                                       CONFIG_LEVEL_SEPARATOR + "TRANSPORTS_TRANSPORT_0_PASSWORD";
+        EnvironmentUtils.setEnv(transport1NameEnv, transport1Name);
+        EnvironmentUtils.setEnv(transport1PortEnv, String.valueOf(transport1Port));
+        EnvironmentUtils.setEnv(transport1SecureEnv, transport1Secure);
+        EnvironmentUtils.setEnv(transport1DescEnv, transport1Desc);
+        EnvironmentUtils.setEnv(transport1PasswordEnv, transport1Password);
+
+        // Transport 2
+        String transport2Name = "pqr";
+        String transport2password = "transport2password";
+
+        String transport2NameEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                                   "TRANSPORTS_TRANSPORT_8_NAME";
+        String transport2PasswordEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE +
+                                       CONFIG_LEVEL_SEPARATOR + "TRANSPORTS_TRANSPORT_8_PASSWORD";
+        EnvironmentUtils.setEnv(transport2NameEnv, transport2Name);
+        EnvironmentUtils.setEnv(transport2PasswordEnv, transport2password);
+
+        // Transport 3 values not changed
+        String transport3password = "zzz";
+
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "envconfigoverride.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+        TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
+
+        // Transport 1 assertions
+        Transport transport1 = configurations.getTransports().getTransport().stream()
+                .filter(transport -> transport.getName().equals(transport1Name))
+                .findFirst().get();
+        Assert.assertEquals(transport1.getPort(), transport1Port);
+        Assert.assertEquals(transport1.isSecure(), transport1Secure);
+        Assert.assertEquals(transport1.getDesc(), transport1Desc);
+        Assert.assertEquals(transport1.getPassword(), transport1Password);
+
+        // Transport 2 assertions
+        Transport transport2 = configurations.getTransports().getTransport().stream()
+                .filter(transport -> transport.getName().equals(transport2Name))
+                .findFirst().get();
+        Assert.assertEquals(transport2.getPassword(), transport2password);
+
+        // Transport 3 assertions
+        Transport transport3 = configurations.getTransports().getTransport().stream()
+                .filter(transport -> transport.getName().equals("xyz"))
+                .findFirst().get();
+        Assert.assertEquals(transport3.getPassword(), transport3password);
+
+        // Unset environment variables
+        EnvironmentUtils.unsetEnv(transport1NameEnv);
+        EnvironmentUtils.unsetEnv(transport1PortEnv);
+        EnvironmentUtils.unsetEnv(transport1SecureEnv);
+        EnvironmentUtils.unsetEnv(transport1DescEnv);
+        EnvironmentUtils.unsetEnv(transport1PasswordEnv);
+
+        EnvironmentUtils.unsetEnv(transport2NameEnv);
+        EnvironmentUtils.unsetEnv(transport2PasswordEnv);
+    }
+
+    @Test(description = "Tests invalid environment variables - config provider should ignore invalid environment " +
+                        "variables")
+    public void invalidEnvVariableFormatsTest() throws ConfigurationException {
+        String invalidEnvVar1 = CONFIG_PREFIX;
+        String invalidEnvVar2 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR;
+        String invalidEnvVar3 = CONFIG_PREFIX + CONFIG_NAMESPACE;
+        String invalidEnvVar4 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE;
+        String invalidEnvVar5 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR;
+        String invalidEnvVar6 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_LEVEL_SEPARATOR +
+                                CONFIG_LEVEL_SEPARATOR;
+        String invalidEnvVar7 = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_LEVEL_SEPARATOR + "config";
+
+        EnvironmentUtils.setEnv(invalidEnvVar1, "");
+        EnvironmentUtils.setEnv(invalidEnvVar2, "");
+        EnvironmentUtils.setEnv(invalidEnvVar3, "");
+        EnvironmentUtils.setEnv(invalidEnvVar4, "");
+        EnvironmentUtils.setEnv(invalidEnvVar5, "");
+        EnvironmentUtils.setEnv(invalidEnvVar6, "");
+        EnvironmentUtils.setEnv(invalidEnvVar7, "");
+
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "envconfigoverride.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+        configProvider.getConfigurationObject(TestConfiguration.class);
+
+        EnvironmentUtils.unsetEnv(invalidEnvVar1);
+        EnvironmentUtils.unsetEnv(invalidEnvVar2);
+        EnvironmentUtils.unsetEnv(invalidEnvVar3);
+        EnvironmentUtils.unsetEnv(invalidEnvVar4);
+        EnvironmentUtils.unsetEnv(invalidEnvVar5);
+        EnvironmentUtils.unsetEnv(invalidEnvVar6);
+        EnvironmentUtils.unsetEnv(invalidEnvVar7);
+    }
+
+    @Test(description = "Tests invalid fields in environment variable")
+    public void envInvalidFieldTest() throws ConfigurationException {
+        boolean isExceptionOccurred = false;
+        String transportNameEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE + CONFIG_LEVEL_SEPARATOR +
+                                  "TRANSPORTS_TRANSPORT_0_NAME";
+        String transportInvalidAttributeEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE +
+                                              CONFIG_LEVEL_SEPARATOR + "TRANSPORTS_TRANSPORT_0_INVALIDATTRIBUTE";
+
+        EnvironmentUtils.setEnv(transportNameEnv, "abc");
+        EnvironmentUtils.setEnv(transportInvalidAttributeEnv, "INVALID");
+
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "envconfigoverride.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+
+        try {
+            configProvider.getConfigurationObject(TestConfiguration.class);
+        } catch (ConfigurationException e) {
+            isExceptionOccurred = true;
+            Assert.assertEquals(e.getMessage(),
+                    "Field INVALIDATTRIBUTE not found in class " + Transport.class.getName());
+        } finally {
+            EnvironmentUtils.unsetEnv(transportNameEnv);
+            EnvironmentUtils.unsetEnv(transportInvalidAttributeEnv);
+        }
+        if (!isExceptionOccurred) {
+            Assert.fail("Expected ConfigurationException exception not occurred.");
+        }
+    }
+
+    @Test(description = "Tests setting array element value failure when the unique element is not set")
+    public void envArrayUniqueElementTest() {
+        boolean isExceptionOccurred = false;
+        String transportPortEnv = CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR + CONFIG_NAMESPACE +
+                                  CONFIG_LEVEL_SEPARATOR + "TRANSPORTS_TRANSPORT_0_PORT";
+
+        EnvironmentUtils.setEnv(transportPortEnv, "INVALID");
+
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "envconfigoverride.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+
+        try {
+            configProvider.getConfigurationObject(TestConfiguration.class);
+        } catch (ConfigurationException e) {
+            isExceptionOccurred = true;
+            Assert.assertEquals(e.getMessage(), "Unique key defining environment variable relevant to " +
+                                                "environment variable " + transportPortEnv + " not found");
+        } finally {
+            EnvironmentUtils.unsetEnv(transportPortEnv);
+        }
+        if (!isExceptionOccurred) {
+            Assert.fail("Expected ConfigurationException exception not occurred.");
+        }
     }
 
     /**

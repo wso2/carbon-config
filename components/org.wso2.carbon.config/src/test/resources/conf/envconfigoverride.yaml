@@ -1,0 +1,34 @@
+testconfiguration:
+  tenant: tenant
+  transports:
+    transport:        #Transport with direct values
+      -  name: abc
+         port: 8000
+         secure: false
+         desc: This transport will use 8000 as its port
+         password: ${sec:conn.auth.password}
+      -  name: pqr
+         port: ${env:pqr.http.port}
+         secure: ${sys:pqr.secure}
+         desc: This transport will use ${env:pqr.http.port} as its port. Secure - ${sys:pqr.secure}
+      -  name: xyz
+         port: ${env:xyz.http.port,9000}
+         secure: ${sys:xyz.secure,true}
+         desc: This transport will use ${env:xyz.http.port,8888} as its port
+
+# WSO2_TESTCONFIGURATION_TENANT="tenant"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_0_NAME="abc"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_0_PORT="8000"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_0_SECURE="false"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_0_DESC="This transport will use 8000 as its port"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_0_PASSWORD="${sec:conn.auth.password}"
+
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_1_NAME="pqr"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_1_PORT="${env:pqr.http.port}"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_1_SECURE="${sys:pqr.secure}"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_1_DESC="This transport will use ${env:pqr.http.port} as its port. Secure - ${sys:pqr.secure}"
+
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_2_NAME="xyz"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_2_PORT="${env:xyz.http.port,9000}"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_2_SECURE="${sys:xyz.secure,true}"
+# WSO2_TESTCONFIGURATION_TRANSPORTS_TRANSPORT_2_DESC="This transport will use ${env:xyz.http.port,8888} as its port"

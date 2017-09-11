@@ -1,0 +1,11 @@
+basictestconfiguration:
+  testBean:
+    name: default
+  complexTestBean:
+    name: default
+    testBean:
+      name: default
+
+# WSO2_BASICTESTCONFIGURATION_TESTBEAN_NAME="default"
+# WSO2_BASICTESTCONFIGURATION_COMPLEXTESTBEAN_NAME="default"
+# WSO2_BASICTESTCONFIGURATION_COMPLEXTESTBEAN_TESTBEAN_NAME="default"
