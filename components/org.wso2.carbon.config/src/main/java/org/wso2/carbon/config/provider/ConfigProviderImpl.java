@@ -29,14 +29,10 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,6 +45,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.lang.model.SourceVersion;
 
 /**
  * This impl class provide the ability to override configurations in various components using a single file which has
@@ -58,10 +55,10 @@ import java.util.stream.Collectors;
  */
 public class ConfigProviderImpl implements ConfigProvider {
     private static final Logger logger = LoggerFactory.getLogger(ConfigProviderImpl.class.getName());
-    private static final String CONFIG_PREFIX = "WSO2";
     private static final String CONFIG_LEVEL_SEPARATOR = "_";
-    private static final int CONFIG_MIN_ELEMENT_COUNT = 3;
-    private static final String UNIQUE_CONFIG_ELEMENT_YAML = "uniqueConfigElement.yaml";
+    private static final int CONFIG_MIN_ELEMENT_COUNT = 2;
+    private static final String[] UNIQUE_ATTRIBUTE_NAMES = {"ID", "NAME"};
+    private static final String UNIQUE_ATTRIBUTE_SPECIFIER = "UNIQUE";
 
     private Map<String, String> deploymentConfigs = null;
     //This regex is used to identify placeholders
@@ -121,7 +118,7 @@ public class ConfigProviderImpl implements ConfigProvider {
             String yamlProcessedString = processPlaceholder(yamlConfigString);
             yamlProcessedString = ConfigurationUtils.substituteVariables(yamlProcessedString);
             T configObject = getConfigurationObject(configClass, configClass.getClassLoader(), yamlProcessedString);
-            return overrideConfigWithEnv(namespace, configObject);
+            return overrideConfigWithSystemVars(namespace, configObject);
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("Deployment configuration mapping doesn't exist: " +
@@ -155,32 +152,61 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     /**
-     * This method will return a map of environment variables which are prefixed with {@value CONFIG_PREFIX}. A hash
-     * map will always be returned even if no environment variables are found with the prefix {@value CONFIG_PREFIX}.
+     * Returns a map of variables which are prefixed with the given namespace. A hash map will always be returned
+     * even if no variables are found which are prefixed with the given namespace.
      * <p>
-     * An environment variable should at least consists of {@value CONFIG_MIN_ELEMENT_COUNT} elements, the configuration
-     * prefix, the configuration namespace and the configuration element.
+     * A variable should at least consists of {@value CONFIG_MIN_ELEMENT_COUNT} elements, the configuration namespace
+     * and the configuration element.
      *
      * @param namespace configuration namespace
-     * @return map of environment variable keys and values which are prefixed with {@value CONFIG_PREFIX}
+     * @return map of variable keys and values which are prefixed with the namespace
      */
-    private HashMap<String, String> getEnvironmentVariables(String namespace) {
-        if (namespace == null || namespace.trim().length() == 0) {
-            return new HashMap<>();
-        }
-        return System.getenv().entrySet().stream()
-                .filter(entry -> entry.getKey()
-                        .startsWith(CONFIG_PREFIX + CONFIG_LEVEL_SEPARATOR))
-                .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT).length == 3))
-                .filter(entry -> ((entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
-                        .trim()).equalsIgnoreCase(namespace)))
-                .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[2]
+    private Map<String, String> filterVariables(String namespace, Map<String, String> variables) {
+        // Filter 1: Ignore case and filter by namespace
+        // Filter 2: Check if the key format is correct
+        // Filter 3: Check if the configuration is not empty
+        // Filter 4: Ignore unique identification specifiers
+        return variables.entrySet().stream()
+                .filter(entry -> entry.getKey().toUpperCase()
+                        .startsWith(namespace.toUpperCase() + CONFIG_LEVEL_SEPARATOR))
+                .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)
+                                          .length == CONFIG_MIN_ELEMENT_COUNT))
+                .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
                                           .trim().length() != 0))
+                .filter(entry -> (!entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
+                        .toUpperCase().endsWith(UNIQUE_ATTRIBUTE_SPECIFIER.toUpperCase())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, HashMap::new));
     }
 
     /**
-     * Override the deployment.yaml configuration default values with configurations provided via environment
+     * Returns a map of system variables which is a combination of filtered system properties and filtered environment
+     * variables. The duplicate entries are overridden by the environment variables.
+     *
+     * @param namespace configuration namespace
+     * @return map of system variable keys and values which are prefixed with the namespace
+     */
+    private Map<String, String> getSystemVariables(String namespace) {
+        if (namespace == null || namespace.trim().length() == 0) {
+            return new HashMap<>();
+        }
+
+        // Collect filtered environment variables and system properties
+        Map<String, String> envVariables = filterVariables(namespace, System.getenv());
+        Map<String, String> systemProperties = filterVariables(namespace, System.getProperties().entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().toString(),
+                        entry -> entry.getValue().toString())));
+
+        Map<String, String> mergedMap = new HashMap<>();
+        // Include system properties
+        mergedMap.putAll(systemProperties);
+        // Add environment variables or override system properties from environment variables
+        mergedMap.putAll(envVariables);
+        return mergedMap;
+    }
+
+    /**
+     * Override the deployment.yaml configuration default values with configurations provided via system
      * variables.
      *
      * @param namespace   configuration namespace
@@ -188,36 +214,35 @@ public class ConfigProviderImpl implements ConfigProvider {
      * @param <T>         object type
      * @return configuration bean object of given type
      */
-    private <T> T overrideConfigWithEnv(String namespace, T configClass) throws ConfigurationException {
-        Map<String, String> environmentVariables = getEnvironmentVariables(namespace);
+    private <T> T overrideConfigWithSystemVars(String namespace, T configClass) throws ConfigurationException {
+        Map<String, String> systemVariables = getSystemVariables(namespace);
 
-        for (Map.Entry<String, String> entry : environmentVariables.entrySet()) {
-            String envKey = entry.getKey();
-            String configKey = envKey.split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[2];
+        for (Map.Entry<String, String> entry : systemVariables.entrySet()) {
+            String systemVarKey = entry.getKey();
+            String configKey = systemVarKey.split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1];
             String value = entry.getValue();
 
             List<String> configKeyElements = new ArrayList<>(Arrays.asList(configKey.split(CONFIG_LEVEL_SEPARATOR)));
-            overrideConfigWithEnvVariable(configClass, null, configKeyElements, value, envKey);
+            overrideConfigWithSystemVariable(configClass, null, configKeyElements, value, systemVarKey);
         }
         return configClass;
     }
 
     /**
-     * Returns the overridden configuration element with the relevant environment variable value.
+     * Returns the overridden configuration element with the relevant system variable value.
      *
      * @param configClass       configuration element class
      * @param field             class field for which the value should be set
      * @param configKeyElements array of configuration elements to process
      * @param value             configuration value
-     * @param envKey            environment variable key
+     * @param systemVarKey            system variable key
      * @param <T>               type of configuration element class
      * @return overridden configuration element
-     * @throws ConfigurationException when an error occurred in overriding the config value with the environment
-     *                                variable
+     * @throws ConfigurationException when an error occurred in overriding the config value with the system variable
      */
     @SuppressWarnings("unchecked")
-    private <T> Object overrideConfigWithEnvVariable(T configClass, Field field, List<String> configKeyElements,
-                                                     String value, String envKey) throws ConfigurationException {
+    private <T> Object overrideConfigWithSystemVariable(T configClass, Field field, List<String> configKeyElements,
+                                                     String value, String systemVarKey) throws ConfigurationException {
         String configElement = configKeyElements.get(0);
         // Primitive values (ex: String : String)
         if (configKeyElements.size() == 1) {
@@ -226,23 +251,23 @@ public class ConfigProviderImpl implements ConfigProvider {
             return configClass;
         }
         // Array type
-        if (isPositiveInteger(configKeyElements.get(0))) {
-            // Get unique element name and it's value
-            String uniqueConfigName = getUniqueConfigKey(field.getName());
-            String uniqueConfigValue = locateValueForUniqueEnvKey(envKey, uniqueConfigName)
-                    .orElseThrow(() -> new ConfigurationException(String
-                            .format(Locale.ENGLISH, "Unique key defining environment variable relevant " +
-                                                    "to environment variable %s not found", envKey)));
-
+        if (isPositiveInteger(configElement)) {
             if (configClass instanceof Collection) {
                 // Update or add config object to list.
-                String configFieldName = configKeyElements.get(1);
+                String configFieldName = configKeyElements.get(1); // Will not be NULL
                 configKeyElements.remove(configElement);
+
+                // Get unique element name and it's value
+                ImmutablePair<String, String> uniqueVarEntry = getUniqueSystemVarEntry(systemVarKey);
+                String uniqueVarKey = uniqueVarEntry.getFirst();
+                String uniqueVarValue = uniqueVarEntry.getSecond();
 
                 Optional configObjectOptional = ((Collection) configClass).stream()
                         .filter(element -> {
                             try {
-                                return getFieldValue(element, uniqueConfigName).equals(uniqueConfigValue);
+                                Field uniqueField = getClassField(element, uniqueVarKey);
+                                Object castedUniqueEnvValue = castToWrapperType(uniqueField, uniqueVarValue);
+                                return getFieldValue(element, uniqueField).equals(castedUniqueEnvValue);
                             } catch (ConfigurationException e) {
                                 return false;
                             }
@@ -253,21 +278,21 @@ public class ConfigProviderImpl implements ConfigProvider {
                     Field configField = getClassField(configObject, configFieldName);
                     ((Collection) configClass).remove(configObject); // Remove all ready existing object from list
                     ((Collection) configClass)
-                            .add(overrideConfigWithEnvVariable(configObject, configField, configKeyElements, value,
-                                    envKey));
+                            .add(overrideConfigWithSystemVariable(configObject, configField, configKeyElements, value,
+                                    systemVarKey));
                 } else {
                     Class<?> parameterizeType = getCollectionType(field);
                     Object parameterizeTypeObj = createInstanceFromClass(parameterizeType);
                     Field configField = getClassField(parameterizeTypeObj, configFieldName);
                     ((Collection) configClass)
-                            .add(overrideConfigWithEnvVariable(parameterizeTypeObj, configField, configKeyElements,
-                                    value, envKey));
+                            .add(overrideConfigWithSystemVariable(parameterizeTypeObj, configField, configKeyElements,
+                                    value, systemVarKey));
                 }
                 return configClass;
             }
             throw new ConfigurationException(String
-                    .format(Locale.ENGLISH, "Cannot determine the array type of the environment variable %s, " +
-                                            "element %s", envKey, configElement));
+                    .format(Locale.ENGLISH, "Cannot determine the array type of the system variable %s, " +
+                                            "element %s", systemVarKey, configElement));
         }
 
         // Complex value (Ex: <Bean Class> : <Attribute> : <Value>)
@@ -276,7 +301,8 @@ public class ConfigProviderImpl implements ConfigProvider {
 
         configKeyElements.remove(configElement);
         setFieldValue(configClass, configElement,
-                overrideConfigWithEnvVariable(configElementObject, configField, configKeyElements, value, envKey));
+                overrideConfigWithSystemVariable(configElementObject, configField, configKeyElements, value,
+                        systemVarKey));
         return configClass;
     }
 
@@ -314,22 +340,96 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     /**
-     * Returns the value relevant for the unique key for a given environment variable.
+     * Returns the key and the value relevant for the unique key for a given system variable.
      * <p>
-     * Ex: considering the below environment variables,
-     * WSO2_WSO2.DATASOURCES_0_NAME = "WSO2_CARBON_DB"
-     * WSO2_WSO2.DATASOURCES_0_DESCRIPTION = "The datasource used for registry and user manager"
-     * If the unique key is NAME and environment variable is WSO2_WSO2.DATASOURCES_0_DESCRIPTION,
-     * the returned value would be "WSO2_CARBON_DB"
+     * Ex: considering the below system variables,
+     * <ul>
+     * <li> WSO2.DATASOURCES_0_NAME = "WSO2_CARBON_DB"</li>
+     * <li> WSO2.DATASOURCES_0_DESCRIPTION = "The datasource used for registry and user manager"</li>
+     * </ul>
+     * If the unique key is NAME and system variable is WSO2.DATASOURCES_0_DESCRIPTION,
+     * the returned value would be, {@code new ImmutablePair("WSO2.DATASOURCES_0_NAME, "WSO2_CARBON_DB")}
+     * <p>
+     * The unique key may either be retrieved from "ID" (1st priority)
+     * <p>
+     * Ex:
+     * <ul>
+     * <li>WSO2.DATASOURCES_0_ID = "WSO2_CARBON_DB"</li>
+     * </ul>
+     * or from "NAME" (2nd priority)
+     * <ul>
+     * <li>WSO2.DATASOURCES_0_NAME = "WSO2_CARBON_DB"</li>
+     * </ul>
+     * <p>
+     * by default. If "ID" or "NAME" is not present, then the method will
+     * look for whether a custom unique key is specified with the suffix {@value UNIQUE_ATTRIBUTE_SPECIFIER}
+     * <p>
+     * Ex:
+     * <ul>
+     * <li>WSO2.DATASOURCES_UNIQUE = "PRIMARYKEY"
+     * WSO2.DATASOURCES_0_PRIMARYKEY = "WSO2_CARBON_DB"</li>
+     * </ul>
      *
-     * @param envKey    environment variable
-     * @param uniqueKey unique key
-     * @return the value relevant for the unique key for a given environment variable
+     * @param systemVarKey system variable key
+     * @return the key and the value relevant for the unique key for a given system variable
+     * @throws ConfigurationException when any of the unique identifiers for the given system variable cannot be
+     *                                located
      */
-    private Optional<String> locateValueForUniqueEnvKey(String envKey, String uniqueKey) {
-        String uniqueEnvKey = envKey.substring(0, envKey.lastIndexOf(CONFIG_LEVEL_SEPARATOR)) + CONFIG_LEVEL_SEPARATOR +
-                              uniqueKey;
-        return Optional.ofNullable(ConfigurationUtils.getSystemVariableValue(uniqueEnvKey, null));
+    private ImmutablePair<String, String> getUniqueSystemVarEntry(String systemVarKey)
+            throws ConfigurationException {
+        // Get unique value from "ID" or "NAME"
+        for (String uniqueKey : UNIQUE_ATTRIBUTE_NAMES) {
+            String uniqueVarKey = systemVarKey.substring(0, systemVarKey.lastIndexOf(CONFIG_LEVEL_SEPARATOR)) +
+                                  CONFIG_LEVEL_SEPARATOR + uniqueKey;
+            String uniqueVarValue = getSystemVariableValue(uniqueVarKey);
+            if (uniqueVarValue != null) {
+                return ImmutablePair.of(uniqueKey, uniqueVarValue);
+            }
+        }
+
+        // Check if the unique system variable is specified since unique value from "ID" and "NAME" failed.
+        String uniqueVarKeySegment = systemVarKey.substring(0, systemVarKey.lastIndexOf(CONFIG_LEVEL_SEPARATOR));
+        String arrayGroupString = uniqueVarKeySegment.substring(systemVarKey.lastIndexOf(CONFIG_LEVEL_SEPARATOR) - 1);
+        uniqueVarKeySegment = uniqueVarKeySegment.substring(0, uniqueVarKeySegment.lastIndexOf(CONFIG_LEVEL_SEPARATOR));
+
+        // Identify the unique system variable attribute
+        String uniqueVarKeySpecifier = uniqueVarKeySegment + CONFIG_LEVEL_SEPARATOR + UNIQUE_ATTRIBUTE_SPECIFIER;
+        String uniqueVarKeySpecifierValue = getSystemVariableValue(uniqueVarKeySpecifier);
+        if (uniqueVarKeySpecifierValue == null) {
+            throw new ConfigurationException(String
+                    .format(Locale.ENGLISH, "Locating unique system variable key for system variable %s from " +
+                                            "default attributes %s failed. Custom unique system variable key %s " +
+                                            "is not specified as well.", systemVarKey,
+                            Arrays.toString(UNIQUE_ATTRIBUTE_NAMES), uniqueVarKeySpecifier));
+        }
+
+        // Get the value for unique system variable
+        String uniqueVarKey = uniqueVarKeySegment + CONFIG_LEVEL_SEPARATOR + arrayGroupString + CONFIG_LEVEL_SEPARATOR +
+                              uniqueVarKeySpecifierValue;
+        String uniqueEnvValue = getSystemVariableValue(uniqueVarKey);
+        if (uniqueEnvValue == null) {
+            throw new ConfigurationException(String
+                    .format(Locale.ENGLISH, "Value for unique system variable %s is null when overriding " +
+                                            "system variable %s", uniqueVarKey, systemVarKey));
+        }
+
+        return ImmutablePair.of(uniqueVarKeySpecifierValue, uniqueEnvValue);
+    }
+
+    /**
+     * Returns the system property value or environment variable value (highest priority for environment variable)
+     * for the given key.
+     *
+     * @param systemVariableKey key of the system property or environment variable
+     * @return system property value or environment variable value for the given key
+     * @throws ConfigurationException when the system property or the environment variable cannot be found for the
+     *                                given key
+     */
+    private String getSystemVariableValue(String systemVariableKey) throws ConfigurationException {
+        if (System.getenv(systemVariableKey) != null) {
+            return System.getenv(systemVariableKey);
+        }
+        return System.getProperty(systemVariableKey);
     }
 
     /**
@@ -358,49 +458,6 @@ public class ConfigProviderImpl implements ConfigProvider {
     }
 
     /**
-     * Returns the key to uniquely identify a configuration.
-     * This method is used to uniquely identify a configuration among a configuration array
-     *
-     * @param beanClass configuration class in which unique identification key should be returned
-     * @return the key to uniquely identify a configuration
-     * @throws ConfigurationException thrown when unique configuration yaml file is not found or when error in reading
-     *                                YAML file or when the unique config element name cannot be located
-     */
-    private String getUniqueConfigKey(String beanClass) throws ConfigurationException {
-        Path configPath = configFileReader.getConfigurationFilePath().getParent();
-        if (configPath == null) {
-            throw new ConfigurationException("Configuration path is null");
-        }
-        Path uniqueConfigListYAMLPath = configPath.resolve(UNIQUE_CONFIG_ELEMENT_YAML);
-        if (!uniqueConfigListYAMLPath.toFile().exists()) {
-            throw new ConfigurationException(String
-                    .format(Locale.ENGLISH, "Unique configuration element YAML file %s not found in path %s",
-                            UNIQUE_CONFIG_ELEMENT_YAML, uniqueConfigListYAMLPath.toAbsolutePath()));
-        }
-        byte[] contentBytes;
-        try {
-            contentBytes = Files.readAllBytes(uniqueConfigListYAMLPath);
-        } catch (IOException e) {
-            throw new ConfigurationException(String.format(Locale.ENGLISH,
-                    "Error in reading unique key configuration mapping YAML file %s",
-                    uniqueConfigListYAMLPath.toAbsolutePath().toString()));
-        }
-
-        String yamlString = new String(contentBytes, StandardCharsets.UTF_8);
-        @SuppressWarnings("unchecked")
-        Map<String, String> uniqueConfigElementMap = getConfigurationObject(Map.class, this.getClass().getClassLoader(),
-                yamlString);
-
-        // Check if the mapping exists.
-        if (!uniqueConfigElementMap.containsKey(beanClass.toUpperCase(Locale.ENGLISH))) {
-            throw new ConfigurationException(String.format(Locale.ENGLISH,
-                    "Cannot locate unique name key %s in unique key configuration mapping YAML file %s", beanClass,
-                    uniqueConfigListYAMLPath.toAbsolutePath().toString()));
-        }
-        return uniqueConfigElementMap.get(beanClass.toUpperCase(Locale.ENGLISH));
-    }
-
-    /**
      * Returns the configuration object for the given YAML string.
      *
      * @param configClass returning configuration object type
@@ -425,6 +482,10 @@ public class ConfigProviderImpl implements ConfigProvider {
      * @throws ConfigurationException thrown when the field is not found in the class
      */
     private <T> Field getClassField(T classObject, String fieldName) throws ConfigurationException {
+        if (!SourceVersion.isName(fieldName)) {
+            throw new ConfigurationException(String.format(Locale.ENGLISH,
+                    "Field name %s is not valid", fieldName));
+        }
         String lowerCaseConfigKey = fieldName.toLowerCase(Locale.ENGLISH);
         Optional<Field> field = Arrays.stream(classObject.getClass().getDeclaredFields())
                 .filter(fieldEntry -> fieldEntry.getName().toLowerCase(Locale.ENGLISH).equals(lowerCaseConfigKey))
@@ -450,14 +511,32 @@ public class ConfigProviderImpl implements ConfigProvider {
         Field field = getClassField(classObject, configKey);
 
         if (field.getType().isPrimitive()) {
-            value = castToPrimitiveType(field, value.toString());
+            value = castToWrapperType(field, value.toString());
         }
 
         try {
             field.set(classObject, value);
         } catch (IllegalAccessException e) {
             throw new ConfigurationException(String.format(Locale.ENGLISH,
-                    "Error in overriding deployment config value with environment config key %s value", configKey));
+                    "Error in overriding deployment config value with system config key %s value", configKey));
+        }
+    }
+
+    /**
+     * Returns the value of the given field of the given object.
+     *
+     * @param classObject Object to retrieve field value from
+     * @param field       he field to get the value from
+     * @param <T>         type of the object to retrieve field value from
+     * @return value of the given field of the given object
+     * @throws ConfigurationException when error occurred in obtaining the field value
+     */
+    private <T> Object getFieldValue(T classObject, Field field) throws ConfigurationException {
+        try {
+            return field.get(classObject);
+        } catch (IllegalAccessException e) {
+            throw new ConfigurationException(String.format(Locale.ENGLISH,
+                    "Error in obtaining value for field %s in %s", field.getName(), classObject.getClass()));
         }
     }
 
@@ -472,12 +551,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      */
     private <T> Object getFieldValue(T classObject, String fieldName) throws ConfigurationException {
         Field field = getClassField(classObject, fieldName);
-        try {
-            return field.get(classObject);
-        } catch (IllegalAccessException e) {
-            throw new ConfigurationException(String.format(Locale.ENGLISH,
-                    "Error in obtaining value for field %s in %s", fieldName, classObject.getClass()));
-        }
+        return getFieldValue(classObject, field);
     }
 
     /**
@@ -487,7 +561,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      * @param value value to be casted to the primitive type
      * @return object casted to its primitive type
      */
-    private Object castToPrimitiveType(Field field, String value) {
+    private Object castToWrapperType(Field field, String value) {
         Class<?> fieldType = field.getType();
         if (fieldType.isAssignableFrom(short.class)) {
             return Short.parseShort(value);

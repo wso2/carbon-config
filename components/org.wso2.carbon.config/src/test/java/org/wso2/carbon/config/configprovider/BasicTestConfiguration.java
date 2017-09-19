@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Sample configuration class for testing purposes.
  *
- * @since 1.0.0
+ * @since 2.0.6
  */
 @XmlRootElement
 @Configuration(description = "Test Bean")
@@ -47,7 +47,7 @@ class TestBean {
 /**
  * Sample configuration class for testing purposes.
  *
- * @since 1.0.0
+ * @since 2.0.6
  */
 @XmlRootElement
 @Configuration(description = "Complex Test Bean")
@@ -78,7 +78,7 @@ class ComplexTestBean {
 /**
  * Sample configuration class for testing purposes.
  *
- * @since 1.0.0
+ * @since 2.0.6
  */
 @XmlRootElement(name = "basictestconfiguration")
 @Configuration(namespace = "basictestconfiguration", description = "Test Configurations Bean")
