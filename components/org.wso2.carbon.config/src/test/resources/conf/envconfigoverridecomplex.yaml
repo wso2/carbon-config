@@ -1,0 +1,11 @@
+basictestconfiguration:
+  testBean:
+    name: default
+  complexTestBean:
+    name: default
+    testBean:
+      name: default
+
+# BASICTESTCONFIGURATION_TESTBEAN_NAME="default"
+# BASICTESTCONFIGURATION_COMPLEXTESTBEAN_NAME="default"
+# BASICTESTCONFIGURATION_COMPLEXTESTBEAN_TESTBEAN_NAME="default"
