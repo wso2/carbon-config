@@ -109,28 +109,30 @@ public class ConfigProviderImpl implements ConfigProvider {
         // lazy loading deployment.yaml configuration.
         loadDeploymentConfiguration(configFileReader);
 
-        if (namespace != null && deploymentConfigs.containsKey(namespace)) {
-            String yamlConfigString = deploymentConfigs.get(namespace);
-            if (logger.isDebugEnabled()) {
-                logger.debug("class name: " + configClass.getSimpleName() + " | new configurations: \n" +
-                        yamlConfigString);
-            }
+        //  if (namespace != null && deploymentConfigs.containsKey(namespace)) {
+        String yamlConfigString = deploymentConfigs.get(namespace);
+        if (logger.isDebugEnabled()) {
+            logger.debug("class name: " + configClass.getSimpleName() + " | new configurations: \n" + yamlConfigString);
+        }
+
+        T configObject;
+        if (yamlConfigString != null && !yamlConfigString.isEmpty()) {
             String yamlProcessedString = processPlaceholder(yamlConfigString);
             yamlProcessedString = ConfigurationUtils.substituteVariables(yamlProcessedString);
-            T configObject = getConfigurationObject(configClass, configClass.getClassLoader(), yamlProcessedString);
-            return overrideConfigWithSystemVars(namespace, configObject);
+            configObject = getConfigurationObject(configClass, configClass.getClassLoader(), yamlProcessedString);
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("Deployment configuration mapping doesn't exist: " +
-                        "creating configuration instance with default values");
+                             "creating configuration instance with default values");
             }
             try {
-                return configClass.newInstance();
+                configObject = configClass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new ConfigurationException("Error while creating configuration instance: "
-                        + configClass.getSimpleName(), e);
+                                                 + configClass.getSimpleName(), e);
             }
         }
+        return overrideConfigWithSystemVars(namespace, configObject);
     }
 
     @Override
@@ -171,8 +173,8 @@ public class ConfigProviderImpl implements ConfigProvider {
                         .startsWith(namespace.toUpperCase() + CONFIG_LEVEL_SEPARATOR))
                 .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)
                                           .length == CONFIG_MIN_ELEMENT_COUNT))
-                .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
-                                          .trim().length() != 0))
+                .filter(entry -> (!entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
+                                          .trim().isEmpty()))
                 .filter(entry -> (!entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
                         .toUpperCase().endsWith(UNIQUE_ATTRIBUTE_SPECIFIER.toUpperCase())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, HashMap::new));
@@ -235,7 +237,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      * @param field             class field for which the value should be set
      * @param configKeyElements array of configuration elements to process
      * @param value             configuration value
-     * @param systemVarKey            system variable key
+     * @param systemVarKey      system variable key
      * @param <T>               type of configuration element class
      * @return overridden configuration element
      * @throws ConfigurationException when an error occurred in overriding the config value with the system variable
