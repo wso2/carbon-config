@@ -161,6 +161,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      * and the configuration element.
      *
      * @param namespace configuration namespace
+     * @param variables Map of key and values
      * @return map of variable keys and values which are prefixed with the namespace
      */
     private Map<String, String> filterVariables(String namespace, Map<String, String> variables) {
