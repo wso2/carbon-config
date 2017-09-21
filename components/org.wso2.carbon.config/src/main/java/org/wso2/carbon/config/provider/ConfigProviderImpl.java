@@ -148,8 +148,10 @@ public class ConfigProviderImpl implements ConfigProvider {
             // Fix the issue #17. return object can be a List or Map
             return yaml.load(processedString);
         }
-        logger.error("configuration doesn't exist for the namespace: {} in deployment yaml   . Hence " +
-                "return null object", namespace);
+        if (logger.isDebugEnabled()) {
+            logger.debug("configuration doesn't exist for the namespace: {} in deployment yaml   . Hence " +
+                    "return null object", namespace);
+        }
         return null;
     }
 
