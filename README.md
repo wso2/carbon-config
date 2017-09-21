@@ -84,3 +84,4 @@ For more information, Please refer document link below.
 
 * [Using the Global Configuration Model](docs/UpdatingConfigurations.md)
 * [Installing Configuration Provider Feature](docs/InstallingConfigFeature.md)
+* [Configurations via Environment Variables](docs/ConfigurationsViaEnvironmentVariables.md)
