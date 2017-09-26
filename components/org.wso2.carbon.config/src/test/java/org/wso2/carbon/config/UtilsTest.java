@@ -86,8 +86,8 @@ public class UtilsTest {
     @Test
     public void testSetGetSystemVariableValue() {
         // Set system variables
-        EnvironmentUtils.setEnv("testEnvironmentVariable", "EnvironmentVariable");
-        EnvironmentUtils.setEnv("server.key", "test-server");
+        EnvironmentUtils.setEnvironmentVariables("testEnvironmentVariable", "EnvironmentVariable");
+        EnvironmentUtils.setEnvironmentVariables("server.key", "test-server");
         // Get system variables
         Assert.assertEquals(ConfigurationUtils.getSystemVariableValue("testEnvironmentVariable",
                 null), "EnvironmentVariable");

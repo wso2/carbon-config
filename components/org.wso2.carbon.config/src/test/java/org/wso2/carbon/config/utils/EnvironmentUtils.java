@@ -45,10 +45,10 @@ public class EnvironmentUtils {
      * @param key Environment variable key.
      * @param value Environment variable value.
      */
-    public static void setEnv(String key, String value) {
-        Map<String, String> newenv = new HashMap<>();
-        newenv.put(key, value);
-        setEnv(newenv);
+    public static void setEnvironmentVariables(String key, String value) {
+        Map<String, String> newEnv = new HashMap<>();
+        newEnv.put(key, value);
+        setEnvironmentVariables(newEnv);
     }
 
     /**
@@ -56,27 +56,48 @@ public class EnvironmentUtils {
      *
      * @param newVariables Map of variables to put into environment variables.
      */
-    public static void setEnv(Map<String, String> newVariables) {
-        Map<String, String> newenv = new HashMap<>();
-        newenv.putAll(System.getenv());
-        newenv.putAll(newVariables);
+    public static void setEnvironmentVariables(Map<String, String> newVariables) {
+        Map<String, String> newEnv = new HashMap<>();
+        newEnv.putAll(System.getenv());
+        newEnv.putAll(newVariables);
+        setEnvVariables(newEnv);
+    }
+
+    /**
+     * Unset environment variable for a given key.
+     *
+     * @param key Environment variable key.
+     */
+    public static void unsetEnvironmentVariables(String key) {
+        Map<String, String> newEnv = new HashMap<>();
+        newEnv.putAll(System.getenv());
+        newEnv.remove(key);
+        setEnvVariables(newEnv);
+    }
+
+    /**
+     * Set environment variable from given map.
+     *
+     * @param environmentVariables Map of variables to put into environment variables.
+     */
+    private static void setEnvVariables(Map<String, String> environmentVariables) {
         try {
             Class<?> processEnvironmentClass = Class.forName(PROCESS_ENVIRONMENT);
 
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField(THE_ENVIRONMENT_FILED);
             theEnvironmentField.setAccessible(true);
             Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
-            env.putAll(newenv);
+            env.putAll(environmentVariables);
 
             Field theCaseInsensitiveEnvironmentField = processEnvironmentClass
                     .getDeclaredField(THE_CASE_INSENSITIVE_ENVIRONMENT);
             theCaseInsensitiveEnvironmentField.setAccessible(true);
-            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
-            cienv.putAll(newenv);
+            Map<String, String> caseInsensitiveEnv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
+            caseInsensitiveEnv.putAll(environmentVariables);
         } catch (NoSuchFieldException e) {
             Class[] classes = Collections.class.getDeclaredClasses();
             Map<String, String> env = System.getenv();
-            Arrays.asList(classes).stream().filter(cl -> COLLECTIONS_UNMODIFIABLE_MAP.equals(cl.getName())).forEach(
+            Arrays.stream(classes).filter(cl -> COLLECTIONS_UNMODIFIABLE_MAP.equals(cl.getName())).forEach(
                     (cl) -> {
                         try {
                             Field field = cl.getDeclaredField(FIELD_M);
@@ -84,7 +105,7 @@ public class EnvironmentUtils {
                             Object obj = field.get(env);
                             Map<String, String> map = (Map<String, String>) obj;
                             map.clear();
-                            map.putAll(newenv);
+                            map.putAll(environmentVariables);
                         } catch (IllegalAccessException | NoSuchFieldException ex) {
                             logger.error("Unable to set environment variable via unmodifiable map", ex);
                         }
