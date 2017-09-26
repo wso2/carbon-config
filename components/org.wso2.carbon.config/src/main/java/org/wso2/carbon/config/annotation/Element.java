@@ -15,6 +15,8 @@
  */
 package org.wso2.carbon.config.annotation;
 
+import org.wso2.carbon.config.ConfigConstants;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,4 +36,7 @@ public @interface Element {
     String description();
 
     boolean required() default false;
+
+    //This is applied only for option fields. Define possible values in
+    String[] possibleValues() default ConfigConstants.NOT_APPLICABLE;
 }
