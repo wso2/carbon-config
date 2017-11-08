@@ -1,0 +1,173 @@
+{{#each this}}
+    {{#if childElements}}
+        <tr>
+            <td><a href="#"  class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="values">{{description}}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><hr/></td>
+        </tr>
+        {{#each childElements}}
+            {{#if childElements}}
+                <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
+                    <td><a href="#"  class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
+                    <td class="values">{{description}}</td>
+                    <td></td>
+                </tr>
+                <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
+                    <td></td>
+                    <td><hr/></td>
+                </tr>
+                {{#each childElements}}
+                    {{#if childElements}}
+                        <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
+                            <td><a href="#"  class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                            <td></td>
+                        </tr>
+                        <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
+                            <td class="values">{{description}}</td>
+                            <td></td>
+                        </tr>
+                        <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
+                            <td></td>
+                            <td><hr/></td>
+                        </tr>
+                        {{#each childElements}}
+                            {{#if childElements}}
+                                <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
+                                    <td><a href="#" class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                                    <td></td>
+                                </tr>
+                                <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
+                                    <td class="values">{{description}}</td>
+                                    <td></td>
+                                </tr>
+                                <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
+                                    <td></td>
+                                    <td><hr/></td>
+                                </tr>
+
+                            {{else}}
+                                <tr bgcolor="#DCDCDC"class="extra{{../elementName}}" style="display:none">
+                                    <td class="elementName">{{elementName}}</td>
+                                    <td><span class="datatype">{{dataType}}</span></td>
+                                </tr>
+                                <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
+                                    <td class="values">{{description}}</td>
+                                    <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+                                </tr>
+                                <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
+                                    {{#if required}}
+                                        <td class="required"> {{required}} </td>
+                                    {{else}}
+                                        <td></td>
+                                    {{/if}}
+                                    {{#if possibleValues}}
+                                        <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+                                    {{else}}
+                                        <td></td>
+                                    {{/if}}
+                                </tr>
+                                <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
+                                    <td></td>
+                                    <td>
+                                        <hr/>
+                                    </td>
+                                </tr>
+                            {{/if}}
+                        {{/each}}
+                    {{else}}
+                        <tr  bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                            <td class="elementName">{{elementName}}</td>
+                            <td><span class="datatype">{{dataType}}</span></td>
+                        </tr>
+                        <tr bgcolor="#D3D3D3"  class="extra{{../elementName}}" style="display:none">
+                            <td class="values">{{description}}</td>
+                            <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+                        </tr>
+                        <tr  bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                            {{#if required}}
+                                <td class="required"> {{required}} </td>
+                            {{else}}
+                                <td></td>
+                            {{/if}}
+                            {{#if possibleValues}}
+                                <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+                            {{else}}
+                                <td></td>
+                            {{/if}}
+                        </tr>
+                        <tr bgcolor="#D3D3D3"  class="extra{{../elementName}}" style="display:none">
+                            <td></td>
+                            <td>
+                                <hr/>
+                            </td>
+                        </tr>
+                    {{/if}}
+                {{/each}}
+            {{else}}
+                <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                    <td class="elementName">{{elementName}}</td>
+                    <td><span class="datatype">{{dataType}}</span></td>
+                </tr>
+                <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
+                    <td class="values">{{description}}</td>
+                    <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+                </tr>
+                <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
+                    {{#if required}}
+                        <td class="required"> {{required}} </td>
+                    {{else}}
+                        <td></td>
+                    {{/if}}
+                    {{#if possibleValues}}
+                        <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+                    {{else}}
+                        <td></td>
+                    {{/if}}
+                </tr>
+                <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
+                    <td></td>
+                    <td>
+                        <hr/>
+                    </td>
+                </tr>
+            {{/if}}
+        {{/each}}
+    {{else}}
+        <tr>
+            <td class="elementName">{{elementName}}</td>
+            <td><span class="datatype">{{dataType}}</span></td>
+        </tr>
+        <tr>
+            <td class="values">{{description}}</td>
+            <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+        </tr>
+        <tr>
+            {{#if required}}
+                <td class="required"> {{required}} </td>
+            {{else}}
+                <td></td>
+            {{/if}}
+            {{#if possibleValues}}
+                <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+            {{else}}
+                <td></td>
+            {{/if}}
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <hr/>
+            </td>
+        </tr>
+    {{/if}}
+{{/each}}

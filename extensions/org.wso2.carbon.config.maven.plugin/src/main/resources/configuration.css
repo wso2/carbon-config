@@ -1,0 +1,267 @@
+      /* some basic styles. nothing to do with flexbox */
+      /*header, footer,
+      nav, article, aside {
+        border: 1px solid black;
+        padding: 0.25em;
+        margin: 0.25em;
+        border-radius: 0.25em;
+      }*/
+
+            article{
+              padding: 0.25em;
+              margin: 0.25em;
+            }
+
+      /*
+        Force full width & height.
+
+        If this block is removed, the layout height/length will be determined by
+        the amount of content in the page. That might result in a page which has
+        a footer only a few inches from the top of the viewport, or one which
+        scrolls beyond the viewport.
+
+        This forces the layout to always be full screen regardless of how much,
+        or how little, content is in place. Neither is "right" or "wrong", there
+        are valid cases for each. I just want to be clear what's controlling the
+        page/viewport height.
+      */
+      html, body, .viewport {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      /* encapsulate the various syntax in helper clases */
+      /* inspired by http://infrequently.org/2009/08/css-3-progress/ */
+
+      /* items flex/expand vertically */
+      .vbox {
+        /* previous syntax */
+        display: -webkit-box;
+        display:    -moz-box;
+        display:         box;
+
+        -webkit-box-orient: vertical;
+           -moz-box-orient: vertical;
+            -ms-box-orient: vertical;
+                box-orient: vertical;
+
+        /* current syntax */
+        display: -webkit-flex;
+        display:    -moz-flex;
+        display:     -ms-flex;
+        display:         flex;
+
+        -webkit-flex-direction: column;
+           -moz-flex-direction: column;
+            -ms-flex-direction: column;
+                flex-direction: column;
+      }
+
+      /* items flex/expand horizontally */
+      .hbox {
+        /* previous syntax */
+        display: -webkit-box;
+        display:    -moz-box;
+        display:     -ms-box;
+        display:         box;
+
+        -webkit-box-orient: horizontal;
+           -moz-box-orient: horizontal;
+            -ms-box-orient: horizontal;
+                box-orient: horizontal;
+
+        /* current syntax */
+        display: -webkit-flex;
+        display:    -moz-flex;
+        display:     -ms-flex;
+        display:         flex;
+
+        -webkit-flex-direction: row;
+           -moz-flex-direction: row;
+            -ms-flex-direction: row;
+                flex-direction: row;
+      }
+
+      .space-between {
+        /* previous syntax */
+        -webkit-box-pack: justify;
+           -moz-box-pack: justify;
+            -ms-box-pack: justify;
+                box-pack: justify;
+
+        /* current syntax */
+        -webkit-justify-content: space-between;
+           -moz-justify-content: space-between;
+            -ms-justify-content: space-between;
+                justify-content: space-between;
+      }
+
+      /* I went with a fixed height header & footer because it's a common case.
+        This could easily be altered to flex proportionally with the page.
+      */
+      header {
+        height: 100px;
+      }
+
+      footer {
+        height: 50px;
+      }
+
+      .main {
+        /* previous syntax */
+        -webkit-box-flex: 1;
+           -moz-box-flex: 1;
+            -ms-box-flex: 1;
+                box-flex: 1;
+
+        /* current syntax */
+        -webkit-flex: 1;
+           -moz-flex: 1;
+            -ms-flex: 1;
+                flex: 1;
+      }
+
+      article {
+        /* previous syntax */
+        -webkit-box-flex: 5;
+           -moz-box-flex: 5;
+            -ms-box-flex: 5;
+                box-flex: 5;
+
+        /* current syntax */
+        -webkit-flex: 5;
+           -moz-flex: 5;
+            -ms-flex: 5;
+                flex: 5;
+      }
+
+      aside, nav {
+        /* previous syntax */
+        -webkit-box-flex: 1;
+           -moz-box-flex: 1;
+            -ms-box-flex: 1;
+                box-flex: 1;
+
+        /* current syntax */
+        -webkit-flex: 1;
+           -moz-flex: 1;
+            -ms-flex: 1;
+                flex: 1;
+      }
+
+      /*.sidenav {
+            background-color: #f8f8f9;
+            }
+
+      .sidenav ul h5{
+         padding:10px;
+       }*/
+
+       #nav-a nav-pills>li>a{
+           border-radius: 0px;
+           border-left: 0px;
+       }
+       #nav-a nav>li>a:focus, #nav-a .nav>li>a:hover{
+           background-color: #e6e3e3;
+       }
+       #nav-a nav>li>a:active{
+           background:#42a5f9;
+           color:#fff;
+       }
+
+       #nav-a navbar-default .navbar-collapse, #nav-a .navbar-default .navbar-form {
+           border-color: #e7e7e7;
+       }
+
+       #breadcrumb-section ul.breadcrumb {
+           list-style: none;
+       }
+       #breadcrumb-section ul.breadcrumb li {
+           display: inline;
+           font-size: 13px;
+           font-family: 'Nunito Sans', sans-serif !important;
+       }
+       #breadcrumb-section ul.breadcrumb li+li:before {
+           color: black;
+           content: "/\00a0";
+       }
+       #breadcrumb-section ul.breadcrumb li a {
+           color: #0275d8;
+           text-decoration: none;
+           border-left: 0px;
+       }
+       #breadcrumb-section ul.breadcrumb li a:hover {
+           color: #01447e;
+           text-decoration: underline;
+       }
+
+       table {
+           border-collapse: collapse;
+           width: 100%;
+           margin-bottom: 30px;
+           table-layout: fixed;
+       }
+
+       td {
+           padding: 8px;
+           text-align: left;
+       }
+
+       table {margin-bottom: 30px; width: 100%;}
+
+       #codesnippet_readonly + div{
+           height: 96vh;
+       }
+
+       #codesnippet_readonly{
+           overflow-y: scroll;
+
+       }
+
+       .codemirror-container{
+           background: #C0C0C0;
+       }
+
+       .row {
+         display: flex; /* equal height of the children */
+       }
+
+       .col {
+         flex: 1; /* additionally, equal width */
+         padding: 1em;
+       }
+
+       .datatype{
+           background-color: rgba(38, 50, 56, 0.04);
+           width: 10px;
+           border: 1px solid #2632381a;
+           padding: 5px;
+           border-radius: 2px 2px 2px 2px;
+           font-family: 'Roboto', sans-serif;
+           font-size: 12px;
+       }
+
+       .elementName{
+           font-family: 'Montserrat', sans-serif;
+       }
+
+       .values{
+           font-family: 'Roboto', sans-serif;
+           font-size: 14px;
+       }
+
+       .required{
+           color:red;
+           font-family: 'Roboto', sans-serif;
+           font-size: 14px;
+       }
+
+       hr{
+           border-top: 1px solid rgb(159, 180, 190);
+       }
+
+       h2, h3, p {
+       font-family: 'Montserrat', sans-serif;
+       }
+
