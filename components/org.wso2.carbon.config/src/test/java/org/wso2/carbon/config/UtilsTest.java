@@ -18,6 +18,7 @@ package org.wso2.carbon.config;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.config.annotation.Configuration;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
 
 /**
@@ -111,5 +112,13 @@ public class UtilsTest {
         String config = "${" + UTIL_ENV + "}" + pathSeparator + "deployment" + pathSeparator;
         Assert.assertEquals(ConfigurationUtils.substituteVariables(config),
                 path + pathSeparator + "deployment" + pathSeparator);
+    }
+
+    @Test
+    public void testEscapeSpecialCharacters() {
+        String inputString = "C:\\Software\\WSO2*Kernal-5.0.0\\wso2\\worker\\bin";
+        String expectedString = "C\\:\\\\Software\\\\WSO2\\*Kernal\\-5.0.0\\\\wso2\\\\worker\\\\bin";
+        String outputString = ConfigurationUtils.escapeSpecialCharacters(inputString);
+        Assert.assertEquals(expectedString, outputString);
     }
 }

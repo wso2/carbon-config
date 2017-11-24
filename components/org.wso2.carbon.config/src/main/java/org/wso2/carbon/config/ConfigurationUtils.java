@@ -159,4 +159,24 @@ public class ConfigurationUtils {
         }
         return value;
     }
+
+    /**
+     * Returns replace value with escaped characters.
+     * @param value replaced values
+     * @return value with escaped characters
+     */
+    public static String escapeSpecialCharacters(String value) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '\\' || c == '+' || c == '-' || c == '!'  || c == '(' || c == ')' || c == ':'
+                    || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~'
+                    || c == '*' || c == '?' || c == '|' || c == '&'  || c == ';' || c == '/'
+                    || Character.isWhitespace(c)) {
+                sb.append('\\');
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
 }
