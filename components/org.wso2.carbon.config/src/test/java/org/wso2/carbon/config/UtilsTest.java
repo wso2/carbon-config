@@ -18,7 +18,6 @@ package org.wso2.carbon.config;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.wso2.carbon.config.annotation.Configuration;
 import org.wso2.carbon.config.utils.EnvironmentUtils;
 
 /**
