@@ -173,17 +173,18 @@ public class ProductConfigurationMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Error while executing the method", e);
         }
+
     }
 
     private Map<String, String> generateMenu(Map<String, String> menuMap, File directory)
             throws MojoExecutionException {
-        File configDirt = directory;
-        File dir = new File(configDirt.getPath());
+        File dir = new File(directory.getPath());
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
                 if (child.getName().endsWith(HTML_FILE_EXTENSION)) {
-                    menuMap.put(child.getName(), child.getName().replace(HTML_FILE_EXTENSION, ""));
+                    menuMap.put(child.getName(), child.getName()
+                            .replace(HTML_FILE_EXTENSION, ""));
                 }
             }
         }
@@ -191,16 +192,17 @@ public class ProductConfigurationMojo extends AbstractMojo {
         return menuMap;
     }
 
+
     private void generateIndex(Map<String, String> menuItems) throws MojoExecutionException, IOException {
         TemplateLoader loader = new ClassPathTemplateLoader();
         loader.setSuffix(".hbs");
         Handlebars handlebars = new Handlebars(loader);
 
-        Template template = null;
+        Template template;
         try {
             template = handlebars.compile("index");
         } catch (IOException e) {
-            throw new MojoExecutionException("Error while reading new resource file from the classpath", e);
+            throw new MojoExecutionException("Error while loading template file from the classpath", e);
         }
 
         Context context = Context.newContext(menuItems);
@@ -208,8 +210,6 @@ public class ProductConfigurationMojo extends AbstractMojo {
         String html = template.apply(context);
 
         File configDir = new File(outputDirectory.getParent(), CONFIG_DOCS_DIR);
-
-
         // create config directory inside project output directory to save config files
         if (!configDir.exists() && !configDir.mkdirs()) {
             throw new MojoExecutionException("Error while creating config directory in classpath");
@@ -227,9 +227,5 @@ public class ProductConfigurationMojo extends AbstractMojo {
         resource.setDirectory(configDir.getAbsolutePath());
         resource.setTargetPath(CONFIG_DOCS_DIR);
         project.addResource(resource);
-
-
     }
-
-
 }

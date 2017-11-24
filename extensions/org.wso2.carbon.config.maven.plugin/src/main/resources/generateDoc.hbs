@@ -2,11 +2,7 @@
     {{#if childElements}}
         <tr>
             <td><a href="#"  class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="values">{{description}}</td>
-            <td></td>
+            <td class="values"><b>Description:</b>{{description}}</td>
         </tr>
         <tr>
             <td></td>
@@ -16,11 +12,7 @@
             {{#if childElements}}
                 <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
                     <td><a href="#"  class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
-                    <td></td>
-                </tr>
-                <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
-                    <td class="values">{{description}}</td>
-                    <td></td>
+                    <td class="values"><b>Description:</b>{{description}}</td>
                 </tr>
                 <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
                     <td></td>
@@ -30,11 +22,7 @@
                     {{#if childElements}}
                         <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
                             <td><a href="#"  class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
-                            <td></td>
-                        </tr>
-                        <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
-                            <td class="values">{{description}}</td>
-                            <td></td>
+                            <td class="values"><b>Description:</b>{{description}}</td>
                         </tr>
                         <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
                             <td></td>
@@ -44,11 +32,7 @@
                             {{#if childElements}}
                                 <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
                                     <td><a href="#" class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')" style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
-                                    <td></td>
-                                </tr>
-                                <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
-                                    <td class="values">{{description}}</td>
-                                    <td></td>
+                                    <td class="values"><b>Description:</b>{{description}}</td>
                                 </tr>
                                 <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
                                     <td></td>
@@ -61,21 +45,25 @@
                                     <td><span class="datatype">{{dataType}}</span></td>
                                 </tr>
                                 <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
-                                    <td class="values">{{description}}</td>
+                                    <td></td>
+                                    <td class="values"><b>Description:</b>{{description}}</td>
+                                </tr>
+                                {{#if required}}
+                                    <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
+                                        <td></td>
+                                        <td class="required"> {{required}} </td>
+                                    </tr>
+                                {{/if}}
+                                <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
+                                    <td></td>
                                     <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
                                 </tr>
-                                <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
-                                    {{#if required}}
-                                        <td class="required"> {{required}} </td>
-                                    {{else}}
+                                {{#if possibleValues}}
+                                    <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
                                         <td></td>
-                                    {{/if}}
-                                    {{#if possibleValues}}
                                         <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
-                                    {{else}}
-                                        <td></td>
-                                    {{/if}}
-                                </tr>
+                                    </tr>
+                                {{/if}}
                                 <tr bgcolor="#DCDCDC"  class="extra{{../elementName}}" style="display:none">
                                     <td></td>
                                     <td>
@@ -90,21 +78,25 @@
                             <td><span class="datatype">{{dataType}}</span></td>
                         </tr>
                         <tr bgcolor="#D3D3D3"  class="extra{{../elementName}}" style="display:none">
-                            <td class="values">{{description}}</td>
+                            <td></td>
+                            <td class="values"><b>Description:</b>{{description}}</td>
+                        </tr>
+                        {{#if required}}
+                            <tr bgcolor="#D3D3D3"  class="extra{{../elementName}}" style="display:none">
+                                <td></td>
+                                <td class="required"> {{required}} </td>
+                            </tr>
+                        {{/if}}
+                        <tr  bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                            <td></td>
                             <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
                         </tr>
-                        <tr  bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
-                            {{#if required}}
-                                <td class="required"> {{required}} </td>
-                            {{else}}
+                        {{#if possibleValues}}
+                            <tr bgcolor="#D3D3D3"  class="extra{{../elementName}}" style="display:none">
                                 <td></td>
-                            {{/if}}
-                            {{#if possibleValues}}
                                 <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
-                            {{else}}
-                                <td></td>
-                            {{/if}}
-                        </tr>
+                            </tr>
+                        {{/if}}
                         <tr bgcolor="#D3D3D3"  class="extra{{../elementName}}" style="display:none">
                             <td></td>
                             <td>
@@ -119,21 +111,25 @@
                     <td><span class="datatype">{{dataType}}</span></td>
                 </tr>
                 <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
-                    <td class="values">{{description}}</td>
+                    <td></td>
+                    <td class="values"><b>Description:</b>{{description}}</td>
+                </tr>
+                {{#if required}}
+                    <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
+                        <td></td>
+                        <td class="required"> {{required}} </td>
+                    </tr>
+                {{/if}}
+                <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
+                    <td></td>
                     <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
                 </tr>
-                <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
-                    {{#if required}}
-                        <td class="required"> {{required}} </td>
-                    {{else}}
+                {{#if possibleValues}}
+                    <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
                         <td></td>
-                    {{/if}}
-                    {{#if possibleValues}}
                         <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
-                    {{else}}
-                        <td></td>
-                    {{/if}}
-                </tr>
+                    </tr>
+                {{/if}}
                 <tr bgcolor="#C0C0C0"  class="extra{{../elementName}}" style="display:none">
                     <td></td>
                     <td>
@@ -148,21 +144,25 @@
             <td><span class="datatype">{{dataType}}</span></td>
         </tr>
         <tr>
-            <td class="values">{{description}}</td>
+            <td></td>
+            <td class="values"><b>Description:</b>{{description}}</td>
+        </tr>
+        {{#if required}}
+            <tr>
+                <td></td>
+                <td class="required"> {{required}} </td>
+            </tr>
+        {{/if}}
+        <tr>
+            <td></td>
             <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
         </tr>
-        <tr>
-            {{#if required}}
-                <td class="required"> {{required}} </td>
-            {{else}}
+        {{#if possibleValues}}
+            <tr>
                 <td></td>
-            {{/if}}
-            {{#if possibleValues}}
                 <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
-            {{else}}
-                <td></td>
-            {{/if}}
-        </tr>
+            </tr>
+        {{/if}}
         <tr>
             <td></td>
             <td>

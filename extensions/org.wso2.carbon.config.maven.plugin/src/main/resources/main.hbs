@@ -30,11 +30,12 @@
             </div>
         </div>
             <div class="col-sm-4 col">
-                <textarea rows="4" cols="50" id="codesnippet_readonly" name="codesnippet_readonly">{{> "yaml" @key}}</textarea>
+                <textarea rows="4" cols="50" id="codesnippet_readonly" name="codesnippet_readonly">{{> "generateYamlDoc" @key}}</textarea>
             </div>
         {{/each}}
         <script>
-            var readOnlyCodeMirror = CodeMirror.fromTextArea(document.getElementById('codesnippet_readonly'), {mode: "yaml",lineNumbers: true,theme: "eclipse",lineWrapping: true,scrollbarStyle: "native",readOnly: true});
+            var readOnlyCodeMirror = CodeMirror.fromTextArea(document.getElementById('codesnippet_readonly'),
+            {mode: "yaml",lineNumbers: true,theme: "eclipse",lineWrapping: true,scrollbarStyle: "native",readOnly: true});
         </script>
     </div>
 </div>

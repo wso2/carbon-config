@@ -128,7 +128,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
             // configuration map used to create the object model
             Map<String, Object> contentMap = new LinkedHashMap<>();
             // map object passed to the handlebars template
-            //Map<String, List<ConfigItem>> contextMap = new LinkedHashMap<>();
             Map<String, List<DataModel>> contextMap = new LinkedHashMap<>();
             try {
                 Class configClass = realm.loadClass(configClassName);
@@ -140,17 +139,18 @@ public class ConfigDocumentMojo extends AbstractMojo {
                     Configuration configuration = (Configuration) configClass.getAnnotation(Configuration.class);
                     Object configObject = configClass.newInstance();
                     System.clearProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION);
+                    Object configElements = readConfigurationElements(configObject, Boolean.TRUE);
                     // add description comment to the root node.
                     finalMap.put(COMMENT_KEY_PREFIX + configuration.namespace(), createDescriptionComment(configuration
                             .description()));
                     // add root node to the config Map
-                    finalMap.put(configuration.namespace(), readConfigurationElements(configObject, Boolean.TRUE));
-                    contentMap.put(configuration.namespace(), readConfigurationElements(configObject, Boolean.TRUE));
+                    finalMap.put(configuration.namespace(), configElements);
+                    contentMap.put(configuration.namespace(), configElements);
                     // write configuration map as a yaml file
                     writeConfigurationFile(finalMap, configuration.namespace());
-                    readCSS();
                     copyCSS(readCSS());
-                    //List<DataModel> configItems = new ArrayList<DataModel>();
+                    //copyJS(readJS());
+                    List<DataModel> configItems = new ArrayList<>();
                     contextMap.put(getYamlString(contentMap), generateContent(contentMap, configItems));
                     generateHTML(contextMap, configuration.displayName());
 
@@ -162,7 +162,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.error("Error while initializing the configuration class : " + configClassName, e);
             } catch (IOException e) {
-                logger.error("Error while creating  : " + configClassName, e);
+                logger.error("Error while loading template from classpath  : ", e);
             }
         }
     }
@@ -210,7 +210,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
         if (!configDir.exists() && !configDir.mkdirs()) {
             throw new MojoExecutionException("Error while creating config directory in classpath");
         }
-
         // write the yaml string to the configuration file in config directory
         try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), filename
                 + YAML_FILE_EXTENTION), UTF_8_CHARSET)) {
@@ -219,7 +218,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
         }
-
         // add configuration document to the project resources under config-docs/ directory.
         Resource resource = new Resource();
         resource.setDirectory(configDir.getAbsolutePath());
@@ -294,130 +292,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
         return content;
     }
 
-    //List<ConfigItem> configItems = new ArrayList<ConfigItem>();
-
-    /**
-     * creating an object model to pass to the handlebars template
-     * using configuration map
-     *
-     * @param contentMap      configuration map
-     * @param configItemsList array list object
-     * @throws MojoExecutionException
-     *//*
-    //@SuppressWarnings("unchecked")
-    private List<ConfigItem> generateContent(Map<String, Object> contentMap,
-                                             List<ConfigItem> configItemsList) throws MojoExecutionException {
-        String elementName = "";
-        String description = "";
-        String dataType = "";
-        String defaultValue = "";
-        String required = "";
-        String possibleValues = "";
-
-
-        for (Map.Entry<String, Object> entry : contentMap.entrySet()) {
-
-            if (entry.getKey().contains(COMMENT_KEY_PREFIX)) {
-
-                elementName = entry.getKey().replaceAll(COMMENT_KEY_PREFIX, "");
-                description = entry.getValue().toString().replaceAll(NEW_LINE_REGEX_PATTERN, "")
-                        .replaceAll("#", "")
-                        .replaceAll(MANDATORY_FIELD_COMMENT, "");
-
-                if (entry.getValue().toString().endsWith(MANDATORY_FIELD_COMMENT)) {
-                    required = MANDATORY_FIELD_ENTRY;
-                } else {
-                    required = "";
-                }
-
-            } else if (entry.getKey().contains(POSSIBLE_VALUE_PREFIX)) {
-                possibleValues = entry.getValue().toString().replaceAll(OPTIONS_FIELD_COMMENT, "")
-                        .replaceAll("#", "");
-            } else if (!(entry.getValue() instanceof LinkedHashMap)) {
-
-                if (entry.getValue() instanceof List) {
-                    dataType = entry.getValue().getClass().getSimpleName();
-                    String valueList = entry.getValue().toString().replaceAll("\\[", "").replaceAll("\\]", "");
-                    String[] values = valueList.split(",");
-                    StringBuilder sb = new StringBuilder();
-                    for (String value : values) {
-                        if (sb.length() == 0) {
-                            sb.append("<br />").append(sb).append(value);
-                        } else {
-                            sb.append("<br />").append(value);
-                        }
-                    }
-                    defaultValue = sb.toString();
-                } else if (entry.getValue() instanceof Map) {
-                    dataType = entry.getValue().getClass().getSimpleName();
-                    String valueList = entry.getValue().toString().replaceAll("\\{", "").replaceAll("\\}", "");
-                    String[] values = valueList.split(",");
-                    StringBuilder builder = new StringBuilder();
-                    for (String items : values) {
-                        if (builder.length() == 0) {
-                            builder.append("<br />").append(builder).append(items);
-                        } else {
-                            builder.append("<br />").append(items);
-                        }
-                    }
-                    defaultValue = builder.toString();
-
-                } else {
-                    dataType = entry.getValue().getClass().getSimpleName();
-                    defaultValue = entry.getValue().toString();
-
-                }
-
-                ConfigItem configItem = new ConfigItem();
-                if (!"".equals(elementName)) {
-                    configItem.setElementName(elementName);
-                    configItem.setDataType(dataType);
-                    configItem.setDescription(description);
-                    configItem.setDefaultValue(defaultValue);
-                    configItem.setRequired(required);
-                    configItem.setPossibleValues(possibleValues);
-
-                    dataType = "";
-                    defaultValue = "";
-                    possibleValues = "";
-
-                    configItemsList.add(configItem);
-                }
-
-
-            } else if (entry.getValue() instanceof LinkedHashMap) {
-
-                ConfigItem configItem = new ConfigItem();
-                if (Objects.equals(elementName, "")) {
-                    generateContent((Map<String, Object>) entry.getValue(), configItemsList);
-                } else {
-                    configItem.setElementName(elementName);
-                    configItem.setDataType(dataType);
-                    configItem.setDescription(description);
-                    configItem.setDefaultValue(defaultValue);
-                    configItem.setRequired(required);
-                    configItem.setPossibleValues(possibleValues);
-
-                    dataType = "";
-                    defaultValue = "";
-                    possibleValues = "";
-                    configItemsList.add(configItem);
-
-                    generateContent((Map<String, Object>) entry.getValue(), configItem.childElements);
-                }
-
-            }
-
-
-        }
-
-        return configItems;
-
-    }*/
-
-
-    List<DataModel> configItems = new ArrayList<DataModel>();
-
     /**
      * creating an object model to pass to the handlebars template
      * using configuration map
@@ -426,7 +300,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
      * @param configItemsList array list object
      * @throws MojoExecutionException
      */
-    //@SuppressWarnings("unchecked")
     private List<DataModel> generateContent(Map<String, Object> contentMap,
                                             List<DataModel> configItemsList) throws MojoExecutionException {
         String elementName = null;
@@ -435,8 +308,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
         String defaultValue = null;
         String required = null;
         String possibleValues = null;
-
-        //List<DataModel> configItems = new ArrayList<DataModel>();
 
         for (Map.Entry<String, Object> entry : contentMap.entrySet()) {
 
@@ -492,7 +363,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
                 }
 
                 DataModel dataModel = new DataModel();
-                //if (!"".equals(elementName)) {
                 if (elementName != null) {
                     dataModel.setElementName(elementName);
                     dataModel.setDataType(dataType);
@@ -512,7 +382,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
             } else if (entry.getValue() instanceof LinkedHashMap) {
 
                 DataModel dataModel = new DataModel();
-                //if (Objects.equals(elementName, "")) {
                 if (elementName == null) {
                     generateContent((Map<String, Object>) entry.getValue(), configItemsList);
                 } else {
@@ -536,7 +405,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
         }
 
-        return configItems;
+        return configItemsList;
 
     }
 
@@ -556,7 +425,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
         Handlebars handlebars = new Handlebars(loader);
 
 
-        Template template = null;
+        Template template;
         try {
             template = handlebars.compile("main");
         } catch (IOException e) {
@@ -567,7 +436,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
 
         String html = template.apply(context);
-        //configItems.clear();
 
         File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
 
@@ -820,76 +688,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
             }
         }
     }
-
-
-    /**
-     * Config Items class.
-     *//*
-    public static class ConfigItem {
-        String elementName = "";
-        String dataType = "";
-        String description = "";
-        String defaultValue = "";
-        String required = "";
-        String possibleValues = "";
-        List<ConfigItem> childElements = new ArrayList<>();
-
-        public String getElementName() {
-            return elementName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getDefaultValue() {
-            return defaultValue;
-        }
-
-        public String getRequired() {
-            return required;
-        }
-
-        public String getPossibleValues() {
-            return possibleValues;
-        }
-
-        public List<ConfigItem> getChildElements() {
-            return childElements;
-        }
-
-        public void setElementName(String elementName) {
-            this.elementName = elementName;
-        }
-
-        public void setDataType(String dataType) {
-            this.dataType = dataType;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public void setDefaultValue(String defaultValue) {
-            this.defaultValue = defaultValue;
-        }
-
-        public void setRequired(String required) {
-            this.required = required;
-        }
-
-        public void setPossibleValues(String possibleValues) {
-            this.possibleValues = possibleValues;
-        }
-
-        public void setChildElements(List<ConfigItem> childElements) {
-            this.childElements = childElements;
-        }
-    }*/
 
 }
 

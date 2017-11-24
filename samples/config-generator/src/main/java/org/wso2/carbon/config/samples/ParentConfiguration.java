@@ -30,9 +30,8 @@ import java.util.Locale;
  */
 @Configuration(namespace = "wso2.configuration", displayName = "Parent Configurations",
         description = "Parent configuration")
-public class ParentConfiguration {
 
-    /*private MetricsLevelConfig levels = new MetricsLevelConfig();*/
+public class ParentConfiguration {
 
     @Element(description = "An example element for this configuration", possibleValues = {"WSO2", "MV"})
     private String name = "WSO2";
@@ -46,7 +45,6 @@ public class ParentConfiguration {
 
     @Element(description = "Second level configuration")
     private ChildConfiguration childConfiguration = new ChildConfiguration();
-
 
     public String getName() {
         return name;
@@ -63,10 +61,6 @@ public class ParentConfiguration {
     public ChildConfiguration getChildConfiguration() {
         return childConfiguration;
     }
-
-    /*public MetricsLevelConfig getLevels() {
-        return levels;
-    }*/
 
     @Override
     public String toString() {
