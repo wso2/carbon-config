@@ -120,4 +120,11 @@ public class UtilsTest {
         String outputString = ConfigurationUtils.escapeSpecialCharacters(inputString);
         Assert.assertEquals(expectedString, outputString);
     }
+
+    @Test
+    public void testEscapeSpecialCharactersWithNullValue() {
+        String inputString = null;
+        String outputString = ConfigurationUtils.escapeSpecialCharacters(inputString);
+        Assert.assertNull(outputString);
+    }
 }

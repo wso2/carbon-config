@@ -645,7 +645,8 @@ public class ConfigProviderImpl implements ConfigProvider {
                         SecureVault secureVault = getSecureVault().orElseThrow(() ->
                                 new ConfigurationRuntimeException("Secure Vault service is not available"));
                         String newValue = new String(secureVault.resolve(value));
-                        inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
+                        inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + ConfigurationUtils
+                                .escapeSpecialCharacters(newValue) + "$8");
                     } catch (SecureVaultException e) {
                         throw new ConfigurationRuntimeException("Unable to resolve the given alias", e);
                     }

@@ -166,6 +166,9 @@ public class ConfigurationUtils {
      * @return value with escaped characters
      */
     public static String escapeSpecialCharacters(String value) {
+        if (value == null) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
