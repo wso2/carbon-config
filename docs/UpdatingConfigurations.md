@@ -214,19 +214,32 @@ ConfigProvider object.
   ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(<configuration file path>, <SecureVault>.object);
 ````
 
-2. Get the particular bean object by calling the `getConfigurationObject(Class<T> configClass)` API with bean class as below. This will return the configuration object of the class with the overriding values in the `deployment.yaml` file. If configurations do not exist in the `deployment.yaml`, the object will be returned with default values.
+2. Once we get the provider service object, we can read the configuration by calling below methods, 
+* Get the particular bean object by calling the `getConfigurationObject(Class<T> configClass)` API with bean class 
+as below. This will return the configuration object of the class with the overriding values in the `deployment.yaml` file. If configurations do not exist in the `deployment.yaml`, the object will be returned with default values.
 
-  ```java
-  <Bean> bean = DataHolder.getInstance().getConfigProvider().getConfigurationObject(<Bean>.class);
-```
+    ```java
+      <Bean> bean = configProvider.getConfigurationObject(<Bean>.class);
+    ```
 
-3. Get the particular configuration object of the namespace in the `deployment.yaml` file by calling the 
+* Get configuration object of the namespace in the `deployment.yaml` file by calling the 
 `getConfigurationObject(String namespace)` with the namespace as shown below. This will return the configuration 
 object of the namespace, provided that configurations exist for the given namespace in the `deployment.yaml` file.
 
- ```java
- Object object = DataHolder.getInstance().getConfigProvider().getConfigurationObject(<namespace>);
- ```
+     ```java
+     Object object = configProvider.getConfigurationObject(<namespace>);
+     ```
+
+* Get the particular bean object by calling the `getConfigurationObject(String namespace, Class<T> configClass)` with
+ the namespace and bean class as shown below. This is first read the configuration of the namespace. If configuration
+  exists, it will return the configuration object of the class with the overriding values in the `deployment.yaml` 
+  for that namespace. If the provided namespace is null or there is no configuration found for the namespace, This 
+  will return the configuration object of the class with default values.
+  
+  ````java
+   Object object = configProvider.getConfigurationObject(<namespace>, <Bean>.class);
+  ````
+
 
 ## Step 3: Building the Carbon feature
 
