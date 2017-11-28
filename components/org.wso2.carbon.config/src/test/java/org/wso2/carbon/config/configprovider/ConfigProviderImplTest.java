@@ -139,6 +139,139 @@ public class ConfigProviderImplTest {
         }
     }
 
+    @Test(description = "This test will test functionality of creating configuration object with different namespace")
+    public void configObjectWithDifferentNamespaceTestCase() {
+        try {
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+            TestConfiguration configurations = configProvider.getConfigurationObject("testconfiguration.v2",
+                    TestConfiguration.class);
+
+            //Transport 1
+            Assert.assertEquals(configurations.getTenant(), "tenant");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getName(), "abc");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPort(), 9090);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getDesc(),
+                    "This transport will use 8000 as its port");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPassword(), PASSWORD);
+
+            //Transport 2
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getName(), "pqrs");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getPort(), 8501);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getDesc(),
+                    "This transport will use 8501 as its port. Secure - true");
+            //Transport 3
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getName(), "xyz");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getPort(), 9000);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
+                    "This transport will use 8888 as its port");
+        } catch (ConfigurationException e) {
+            logger.error(e.toString());
+            Assert.fail();
+        }
+    }
+
+    @Test(description = "This test will test functionality of creating configuration object with invalid namespace")
+    public void configObjectWithNullNamespaceTestCase() {
+        try {
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+            TestConfiguration configurations = configProvider.getConfigurationObject("testconfiguration.v3",
+                    TestConfiguration.class);
+
+            //Transport 1
+            Assert.assertEquals(configurations.getTenant(), "tenant");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getName(), "abc");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPort(), 8000);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).isSecure(), "false");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getDesc(),
+                    "This transport will use 8000 as its port");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPassword(), PASSWORD);
+
+            //Transport 2
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getName(), "pqr");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getPort(), 8501);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getDesc(),
+                    "This transport will use 8501 as its port. Secure - true");
+            //Transport 3
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getName(), "xyz");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getPort(), 9000);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
+                    "This transport will use 8888 as its port");
+        } catch (ConfigurationException e) {
+            logger.error(e.toString());
+            Assert.fail();
+        }
+    }
+
+    @Test(description = "This test will test functionality of creating configuration object with null namespace")
+    public void configObjectWithInvaildNamespaceTestCase() {
+        try {
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+            TestConfiguration configurations = configProvider.getConfigurationObject(null,
+                    TestConfiguration.class);
+
+            //Transport 1
+            Assert.assertEquals(configurations.getTenant(), "tenant");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getName(), "abc");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPort(), 8000);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).isSecure(), "false");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getDesc(),
+                    "This transport will use 8000 as its port");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(0).getPassword(), PASSWORD);
+
+            //Transport 2
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getName(), "pqr");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getPort(), 8501);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(1).getDesc(),
+                    "This transport will use 8501 as its port. Secure - true");
+            //Transport 3
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getName(), "xyz");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getPort(), 9000);
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).isSecure(), "true");
+            Assert.assertEquals(configurations.getTransports().getTransport().get(2).getDesc(),
+                    "This transport will use 8888 as its port");
+        } catch (ConfigurationException e) {
+            logger.error(e.toString());
+            Assert.fail();
+        }
+    }
+
+    @Test(description = "This test will test functionality of creating configuration object without namespace")
+    public void configObjectWithoutNamespaceTestCase() {
+        try {
+            ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf", "Example" +
+                    ".yaml").get());
+            ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+            BaseConfiguration configurations = configProvider.getConfigurationObject("nonamespace.configuration",
+                    BaseConfiguration.class);
+
+            //Transport 1
+            Assert.assertEquals(configurations.getName(), "transport");
+            Assert.assertEquals(configurations.getTestBean().getId(), 30);
+
+            configurations = configProvider.getConfigurationObject(null,
+                    BaseConfiguration.class);
+
+            //Transport 1
+            Assert.assertEquals(configurations.getName(), "test");
+            Assert.assertEquals(configurations.getTestBean().getId(), 20);
+        } catch (ConfigurationException e) {
+            logger.error(e.toString());
+            Assert.fail();
+        }
+    }
+
     @Test(description = "This test will test functionality when using yaml config file and configuration map")
     public void yamlFileConfigMapTestCase() throws IOException {
         Path resourcePath = TestUtils.getResourcePath("conf", "Example.yaml").get();

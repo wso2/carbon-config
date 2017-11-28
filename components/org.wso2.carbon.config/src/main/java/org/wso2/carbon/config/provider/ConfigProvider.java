@@ -48,4 +48,19 @@ public interface ConfigProvider {
      * @throws ConfigurationException if there is a problem while reading the configurations
      */
     Object getConfigurationObject(String namespace) throws ConfigurationException;
+
+    /**
+     * Returns configuration object of the class.
+     * If configuration namespace is given, reads the configuration of the namespace and create instance of the the
+     * class from that configurations.
+     * If namespace is null or configuration doesn't exist for in configuration file, returns configurations based on
+     * the bean class.
+     *
+     * @param namespace config namespace
+     * @param configClass configuration bean class
+     * @param <T>        object type
+     * @return configuration object
+     * @throws ConfigurationException if there is a problem while reading the configurations
+     */
+    <T extends Object> T getConfigurationObject(String namespace, Class<T> configClass) throws ConfigurationException;
 }
