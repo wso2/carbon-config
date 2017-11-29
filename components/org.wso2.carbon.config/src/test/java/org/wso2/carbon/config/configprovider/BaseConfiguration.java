@@ -22,7 +22,6 @@ package org.wso2.carbon.config.configprovider;
  * @since 2.1.3
  */
 public class BaseConfiguration {
-
     private String name = "test";
     private BaseTestBean testBean = new BaseTestBean();
 
@@ -35,7 +34,6 @@ public class BaseConfiguration {
     }
 
 }
-
 
 /**
  * Sample configuration class for testing purposes.
