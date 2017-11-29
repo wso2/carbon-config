@@ -17,6 +17,7 @@ package org.wso2.carbon.config.configprovider;
 
 /**
  * Sample configuration class for testing purposes.
+ * <p>
  * This is to test generating configuration for beans without namespace.
  *
  * @since 2.1.3

@@ -54,10 +54,9 @@ public interface ConfigProvider {
      * <p>
      * If configuration namespace is given, reads the configuration of the namespace and create instance of the the
      * class from that configurations.
-     * </p><p>
+     * <p>
      * If namespace is null or configuration doesn't exist for in configuration file, returns configurations based on
      * the bean class.
-     * </p>
      *
      * @param namespace config namespace
      * @param configClass configuration bean class
