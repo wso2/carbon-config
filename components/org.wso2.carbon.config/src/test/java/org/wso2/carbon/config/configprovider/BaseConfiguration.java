@@ -32,7 +32,6 @@ public class BaseConfiguration {
     public BaseTestBean getTestBean() {
         return testBean;
     }
-
 }
 
 /**
