@@ -38,6 +38,8 @@ public class ConfigurationUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
     private static final Pattern varPattern = Pattern.compile("\\$\\{([^}]*)}");
+    private static final char[] specialCharArray = new char[]{'\\', '+', '-', '!', '(', ')', ':', '^', '[', ']',
+            '\"', '{', '}', '~', '*', '?', '|', '&', ';', '/'};
 
     private ConfigurationUtils() {
     }
@@ -162,6 +164,7 @@ public class ConfigurationUtils {
 
     /**
      * Returns replace value with escaped characters.
+     *
      * @param value replaced values
      * @return value with escaped characters
      */
@@ -172,10 +175,14 @@ public class ConfigurationUtils {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c == '\\' || c == '+' || c == '-' || c == '!'  || c == '(' || c == ')' || c == ':'
-                    || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~'
-                    || c == '*' || c == '?' || c == '|' || c == '&'  || c == ';' || c == '/'
-                    || Character.isWhitespace(c)) {
+
+            boolean charExists = false;
+            for (char s : specialCharArray) {
+                if (c == s) {
+                    charExists = true;
+                }
+            }
+            if (charExists || Character.isWhitespace(c)) {
                 sb.append('\\');
             }
             sb.append(c);
