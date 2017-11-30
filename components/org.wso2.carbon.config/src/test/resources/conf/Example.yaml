@@ -15,3 +15,26 @@ testconfiguration:
          port: ${env:xyz.http.port,9000}
          secure: ${sys:xyz.secure,true}
          desc: This transport will use ${env:xyz.http.port,8888} as its port
+
+testconfiguration.v2:
+  tenant: tenant
+  transports:
+    transport:        #Transport with direct values
+      -  name: abc
+         port: 9090
+         secure: true
+         desc: This transport will use 8000 as its port
+         password: ${sec:conn.auth.password}
+      -  name: pqrs
+         port: ${env:pqr.http.port}
+         secure: ${sys:pqr.secure}
+         desc: This transport will use ${env:pqr.http.port} as its port. Secure - ${sys:pqr.secure}
+      -  name: xyz
+         port: ${env:xyz.http.port,9000}
+         secure: ${sys:xyz.secure,true}
+         desc: This transport will use ${env:xyz.http.port,8888} as its port
+
+nonamespace.configuration:
+  name: transport
+  testBean:
+    id: 30

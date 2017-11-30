@@ -155,6 +155,21 @@ public class ConfigProviderImpl implements ConfigProvider {
         return null;
     }
 
+    @Override
+    public <T> T getConfigurationObject(String namespace, Class<T> configClass) throws ConfigurationException {
+        // lazy loading deployment.yaml configuration, if it is not exists
+        loadDeploymentConfiguration(configFileReader);
+        // check for yaml configuration from deployment configs for the namespace.
+        if (namespace != null && deploymentConfigs.containsKey(namespace)) {
+            String configString = deploymentConfigs.get(namespace);
+            String processedString = processPlaceholder(configString);
+            processedString = ConfigurationUtils.substituteVariables(processedString);
+            return getConfigurationObject(configClass, configClass.getClassLoader(), processedString);
+        }
+        // Get the configuration from bean annotation.
+        return getConfigurationObject(configClass);
+    }
+
     /**
      * Returns a map of variables which are prefixed with the given namespace. A hash map will always be returned
      * even if no variables are found which are prefixed with the given namespace.
