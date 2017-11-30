@@ -17,7 +17,6 @@
  */
 package org.wso2.carbon.config.configprovider;
 
-import org.wso2.carbon.secvault.SecureVaultUtils;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -40,7 +39,7 @@ public class TestUtils {
      * @return path of the resources
      */
     public static Optional<Path> getResourcePath(String... resourcePaths) {
-        URL resourceURL = SecureVaultUtils.class.getClassLoader().getResource("");
+        URL resourceURL = TestUtils.class.getClassLoader().getResource("");
         if (resourceURL != null) {
             String resourcePath = resourceURL.getPath();
             if (resourcePath != null) {

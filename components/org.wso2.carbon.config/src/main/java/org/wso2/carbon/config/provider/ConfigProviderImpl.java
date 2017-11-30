@@ -660,7 +660,8 @@ public class ConfigProviderImpl implements ConfigProvider {
                         SecureVault secureVault = getSecureVault().orElseThrow(() ->
                                 new ConfigurationRuntimeException("Secure Vault service is not available"));
                         String newValue = new String(secureVault.resolve(value));
-                        inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
+                        inputString = inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + ConfigurationUtils
+                                .escapeSpecialCharacters(newValue) + "$8");
                     } catch (SecureVaultException e) {
                         throw new ConfigurationRuntimeException("Unable to resolve the given alias", e);
                     }
@@ -689,12 +690,14 @@ public class ConfigProviderImpl implements ConfigProvider {
         String newValue = func.apply(key);
         //If the new value is not null, replace the placeholder with the new value and return the string.
         if (newValue != null) {
-            return inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + newValue + "$8");
+            return inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" +
+                    ConfigurationUtils.escapeSpecialCharacters(newValue) + "$8");
         }
         //If the new value is empty and the default value is not empty, replace the placeholder with the default
         // value and return the string
         if (defaultValue != null) {
-            return inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" + defaultValue + "$8");
+            return inputString.replaceFirst(PLACEHOLDER_REGEX, "$1" +
+                    ConfigurationUtils.escapeSpecialCharacters(defaultValue) + "$8");
         }
         //Otherwise print an error message and throw na exception
         String msg;

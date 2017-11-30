@@ -38,6 +38,8 @@ public class ConfigurationUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
     private static final Pattern varPattern = Pattern.compile("\\$\\{([^}]*)}");
+    private static final char[] specialCharArray = new char[]{'\\', '+', '-', '!', '(', ')', ':', '^', '[', ']',
+            '\"', '{', '}', '~', '*', '?', '|', '&', ';', '/'};
 
     private ConfigurationUtils() {
     }
@@ -158,5 +160,33 @@ public class ConfigurationUtils {
             }
         }
         return value;
+    }
+
+    /**
+     * Returns replace value with escaped characters.
+     *
+     * @param value replaced values
+     * @return value with escaped characters
+     */
+    public static String escapeSpecialCharacters(String value) {
+        if (value == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+
+            boolean charExists = false;
+            for (char s : specialCharArray) {
+                if (c == s) {
+                    charExists = true;
+                }
+            }
+            if (charExists || Character.isWhitespace(c)) {
+                sb.append('\\');
+            }
+            sb.append(c);
+        }
+        return sb.toString();
     }
 }

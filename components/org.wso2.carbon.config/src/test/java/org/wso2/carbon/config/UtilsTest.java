@@ -112,4 +112,17 @@ public class UtilsTest {
         Assert.assertEquals(ConfigurationUtils.substituteVariables(config),
                 path + pathSeparator + "deployment" + pathSeparator);
     }
+
+    @DataProvider(name = "params")
+    public Object[][] createParamValues() {
+        return new Object[][]{{"C:\\Software\\WSO2*Kernal-5.0.0\\wso2\\worker\\bin",
+                "C\\:\\\\Software\\\\WSO2\\*Kernal\\-5.0.0\\\\wso2\\\\worker\\\\bin"},
+                {null, null}};
+    }
+
+    @Test(dataProvider = "params")
+    public void testEscapeSpecialCharacters(String inputString, String expectedString) {
+        String outputString = ConfigurationUtils.escapeSpecialCharacters(inputString);
+        Assert.assertEquals(expectedString, outputString);
+    }
 }
