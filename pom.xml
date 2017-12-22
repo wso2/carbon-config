@@ -130,6 +130,18 @@
                 <artifactId>maven-core</artifactId>
                 <version>${maven.core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-testng</artifactId>
+                <version>${powermock.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito</artifactId>
+                <version>${powermock.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
@@ -225,6 +237,7 @@
         <easy.mock.version>3.4</easy.mock.version>
         <org.jacoco.ant.version>0.7.5.201505241946</org.jacoco.ant.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
+        <powermock.version>1.6.6</powermock.version>
 
         <!-- Maven plugin versions -->
         <maven.project.version>2.2.1</maven.project.version>

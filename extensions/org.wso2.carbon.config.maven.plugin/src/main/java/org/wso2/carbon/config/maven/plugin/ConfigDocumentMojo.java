@@ -15,11 +15,7 @@
  */
 package org.wso2.carbon.config.maven.plugin;
 
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
-import com.github.jknack.handlebars.io.TemplateLoader;
+import com.google.gson.Gson;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -74,7 +70,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigDocumentMojo.class.getName());
     private static final String YAML_FILE_EXTENTION = ".yaml";
-    private static final String HTML_FILE_EXTENTION = ".html";
+    private static final String JSON_FILE_EXTENTION = ".json";
     private static final String NEW_LINE_REGEX_PATTERN = "\\r?\\n";
     private static final String COMMENT_KEY_PREFIX = "comment-";
     private static final String POSSIBLE_VALUE_PREFIX = "options-";
@@ -88,6 +84,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
     private static final String PLUGIN_DESCRIPTOR_KEY = "pluginDescriptor";
     private static final String LICENSE_FILE = "LICENSE.txt";
     private static final String CSS_FILE = "configuration.css";
+    private static final String JS_FILE = "handlebars-v4.0.11.js";
     private static final String MANDATORY_FIELD_ENTRY = "Required";
 
     @Parameter(defaultValue = "${project}", required = true)
@@ -127,8 +124,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
             Map<String, Object> finalMap = new LinkedHashMap<>();
             // configuration map used to create the object model
             Map<String, Object> contentMap = new LinkedHashMap<>();
-            // map object passed to the handlebars template
-            Map<String, List<DataModel>> contextMap = new LinkedHashMap<>();
             try {
                 Class configClass = realm.loadClass(configClassName);
                 if (configClass != null && configClass.isAnnotationPresent(Configuration.class)) {
@@ -149,10 +144,11 @@ public class ConfigDocumentMojo extends AbstractMojo {
                     // write configuration map as a yaml file
                     writeConfigurationFile(finalMap, configuration.namespace());
                     copyCSS(readCSS());
-                    //copyJS(readJS());
+                    copyJS(readJS());
                     List<DataModel> configItems = new ArrayList<>();
-                    contextMap.put(getYamlString(contentMap), generateContent(contentMap, configItems));
-                    generateHTML(contextMap, configuration.displayName());
+                    List<DataModel> configItemsList = generateContent(contentMap, configItems);
+                    generateJSONFiles(getYamlString(contentMap), configuration.displayName(), configItemsList,
+                            configuration.namespace());
 
                 } else {
                     logger.error("Error while loading the configuration class : " + configClassName);
@@ -161,8 +157,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
                 logger.error("Error while creating new instance of the class : " + configClassName, e);
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.error("Error while initializing the configuration class : " + configClassName, e);
-            } catch (IOException e) {
-                logger.error("Error while loading template from classpath  : ", e);
             }
         }
     }
@@ -274,6 +268,54 @@ public class ConfigDocumentMojo extends AbstractMojo {
     }
 
     /**
+     * read handlebars.js file in the resource folder.
+     *
+     * @throws MojoExecutionException
+     */
+    private String readJS() throws MojoExecutionException {
+        InputStream inputStream = ConfigDocumentMojo.class.getClassLoader().getResourceAsStream(JS_FILE);
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, UTF_8_CHARSET))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            logger.error("Error while reading the css file.", e);
+        }
+
+        return sb.toString();
+
+    }
+
+    /**
+     * copy handlebars.js file in the resource folder.
+     *
+     * @throws MojoExecutionException
+     */
+    private void copyJS(String js) throws MojoExecutionException {
+
+        File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
+
+        if (!configDir.exists() && !configDir.mkdirs()) {
+            throw new MojoExecutionException("Error while creating config directory in classpath");
+        }
+
+        try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), JS_FILE), UTF_8_CHARSET)) {
+            out.println(js);
+        } catch (FileNotFoundException |
+                UnsupportedEncodingException e) {
+            throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
+        }
+
+        Resource resource = new Resource();
+        resource.setDirectory(configDir.getAbsolutePath());
+        resource.setTargetPath(ConfigConstants.CONFIG_DIR);
+        project.addResource(resource);
+    }
+
+    /**
      * create the YAML String from the contentMap
      *
      * @param contentMap configuration map
@@ -359,7 +401,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
                 } else {
                     dataType = entry.getValue().getClass().getSimpleName();
                     defaultValue = entry.getValue().toString();
-
                 }
 
                 DataModel dataModel = new DataModel();
@@ -377,7 +418,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
                     configItemsList.add(dataModel);
                 }
-
 
             } else if (entry.getValue() instanceof LinkedHashMap) {
 
@@ -399,46 +439,28 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
                     generateContent((Map<String, Object>) entry.getValue(), dataModel.childElements);
                 }
-
             }
-
-
         }
-
         return configItemsList;
-
     }
 
-
     /**
-     * generate the HTML file using handlebars template
+     * generating the JSON files and
+     * write them to the class output directory
      *
-     * @param contextMap contains config item array list and the YAML string
-     * @param filename   display name define in the configuration bean classes
+     * @param configItems configuration list
      * @throws MojoExecutionException, IOException
      */
-    private void generateHTML(Map<String, List<DataModel>> contextMap, String filename)
-            throws MojoExecutionException, IOException {
-
-        TemplateLoader loader = new ClassPathTemplateLoader();
-        loader.setSuffix(".hbs");
-        Handlebars handlebars = new Handlebars(loader);
-
-
-        Template template;
-        try {
-            template = handlebars.compile("main");
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error while loading template from classpath", e);
-        }
-
-        Context context = Context.newContext(contextMap);
-
-
-        String html = template.apply(context);
+    private void generateJSONFiles(String yamlString, String displayName,
+                                   List<DataModel> configItems, String filename) throws MojoExecutionException {
+        Gson gson = new Gson();
+        DataContext dataContext = new DataContext();
+        dataContext.setElements(configItems);
+        dataContext.setDisplayName(displayName);
+        dataContext.setYamlString(yamlString);
+        Object json = gson.toJson(dataContext);
 
         File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
-
 
         // create config directory inside project output directory to save config files
         if (!configDir.exists() && !configDir.mkdirs()) {
@@ -446,13 +468,13 @@ public class ConfigDocumentMojo extends AbstractMojo {
         }
 
         try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), filename
-                + HTML_FILE_EXTENTION), UTF_8_CHARSET)) {
-            out.println(html);
+                + JSON_FILE_EXTENTION), UTF_8_CHARSET)) {
+            out.println(json);
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
         }
 
-        // add configuration document to the project resources under config-docs/ directory.
+        // add configguration document to the project resources under config-docs/ directory.
         Resource resource = new Resource();
         resource.setDirectory(configDir.getAbsolutePath());
         resource.setTargetPath(ConfigConstants.CONFIG_DIR);

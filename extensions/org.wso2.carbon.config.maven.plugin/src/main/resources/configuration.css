@@ -211,7 +211,7 @@
        table {margin-bottom: 30px; width: 100%;}
 
        #codesnippet_readonly + div{
-           height: 96vh;
+           height: 79vh;
        }
 
        #codesnippet_readonly{
