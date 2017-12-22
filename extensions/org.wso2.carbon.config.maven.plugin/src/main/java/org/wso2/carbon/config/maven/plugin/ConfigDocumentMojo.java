@@ -15,6 +15,7 @@
  */
 package org.wso2.carbon.config.maven.plugin;
 
+import com.google.gson.Gson;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -47,13 +48,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+
 
 /**
  * This class will create configuration document from bean class annotated in the project.
@@ -66,14 +70,22 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigDocumentMojo.class.getName());
     private static final String YAML_FILE_EXTENTION = ".yaml";
+    private static final String JSON_FILE_EXTENTION = ".json";
     private static final String NEW_LINE_REGEX_PATTERN = "\\r?\\n";
     private static final String COMMENT_KEY_PREFIX = "comment-";
+    private static final String POSSIBLE_VALUE_PREFIX = "options-";
+    private static final String OPTIONS_FIELD_COMMENT = "Possible Values - ";
     private static final String COMMENT_KEY_REGEX_PATTERN = COMMENT_KEY_PREFIX + ".*";
+    private static final String POSSIBLE_VALUE_REGEX_PATTERN = POSSIBLE_VALUE_PREFIX + ".*";
+    private static final String COMMENT_REGEX_PATTERN = "#" + ".*";
     private static final String EMPTY_LINE_REGEX_PATTERN = "(?m)^[ \t]*\r?\n";
-    private static final String MANDATORY_FIELD_COMMENT = "# THIS IS A MANDATORY FIELD";
+    private static final String MANDATORY_FIELD_COMMENT = "THIS IS A MANDATORY FIELD";
     private static final String UTF_8_CHARSET = "UTF-8";
     private static final String PLUGIN_DESCRIPTOR_KEY = "pluginDescriptor";
     private static final String LICENSE_FILE = "LICENSE.txt";
+    private static final String CSS_FILE = "configuration.css";
+    private static final String JS_FILE = "handlebars-v4.0.11.js";
+    private static final String MANDATORY_FIELD_ENTRY = "Required";
 
     @Parameter(defaultValue = "${project}", required = true)
     private MavenProject project;
@@ -108,7 +120,10 @@ public class ConfigDocumentMojo extends AbstractMojo {
 
         // process configuration bean to create configuration document
         for (String configClassName : configurationClasses) {
+            // configuration map used to generate the YAML file
             Map<String, Object> finalMap = new LinkedHashMap<>();
+            // configuration map used to create the object model
+            Map<String, Object> contentMap = new LinkedHashMap<>();
             try {
                 Class configClass = realm.loadClass(configClassName);
                 if (configClass != null && configClass.isAnnotationPresent(Configuration.class)) {
@@ -119,13 +134,22 @@ public class ConfigDocumentMojo extends AbstractMojo {
                     Configuration configuration = (Configuration) configClass.getAnnotation(Configuration.class);
                     Object configObject = configClass.newInstance();
                     System.clearProperty(ConfigConstants.SYSTEM_PROPERTY_DOC_GENERATION);
+                    Object configElements = readConfigurationElements(configObject, Boolean.TRUE);
                     // add description comment to the root node.
                     finalMap.put(COMMENT_KEY_PREFIX + configuration.namespace(), createDescriptionComment(configuration
                             .description()));
                     // add root node to the config Map
-                    finalMap.put(configuration.namespace(), readConfigurationElements(configObject, Boolean.TRUE));
+                    finalMap.put(configuration.namespace(), configElements);
+                    contentMap.put(configuration.namespace(), configElements);
                     // write configuration map as a yaml file
                     writeConfigurationFile(finalMap, configuration.namespace());
+                    copyCSS(readCSS());
+                    copyJS(readJS());
+                    List<DataModel> configItems = new ArrayList<>();
+                    List<DataModel> configItemsList = generateContent(contentMap, configItems);
+                    generateJSONFiles(getYamlString(contentMap), configuration.displayName(), configItemsList,
+                            configuration.namespace());
+
                 } else {
                     logger.error("Error while loading the configuration class : " + configClassName);
                 }
@@ -172,6 +196,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
         String content = yaml.dumpAsMap(finalMap);
         // remove all comments key lines from the content. this was added as key of each field description in the map.
         content = content.replaceAll(COMMENT_KEY_REGEX_PATTERN, "");
+        content = content.replaceAll(POSSIBLE_VALUE_REGEX_PATTERN, "");
         content = content.replaceAll(EMPTY_LINE_REGEX_PATTERN, "");
         File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
 
@@ -179,12 +204,272 @@ public class ConfigDocumentMojo extends AbstractMojo {
         if (!configDir.exists() && !configDir.mkdirs()) {
             throw new MojoExecutionException("Error while creating config directory in classpath");
         }
-
         // write the yaml string to the configuration file in config directory
         try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), filename
                 + YAML_FILE_EXTENTION), UTF_8_CHARSET)) {
             out.println(getLicenseHeader());
             out.println(content);
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
+        }
+        // add configuration document to the project resources under config-docs/ directory.
+        Resource resource = new Resource();
+        resource.setDirectory(configDir.getAbsolutePath());
+        resource.setTargetPath(ConfigConstants.CONFIG_DIR);
+        project.addResource(resource);
+    }
+
+    /**
+     * read css file in the resource folder.
+     *
+     * @throws MojoExecutionException
+     */
+    private String readCSS() throws MojoExecutionException {
+        InputStream inputStream = ConfigDocumentMojo.class.getClassLoader().getResourceAsStream(CSS_FILE);
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, UTF_8_CHARSET))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            logger.error("Error while reading the css file.", e);
+        }
+
+        return sb.toString();
+
+    }
+
+    /**
+     * copy css file in the resource folder.
+     *
+     * @throws MojoExecutionException
+     */
+    private void copyCSS(String css) throws MojoExecutionException {
+
+        File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
+
+        if (!configDir.exists() && !configDir.mkdirs()) {
+            throw new MojoExecutionException("Error while creating config directory in classpath");
+        }
+
+        try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), CSS_FILE), UTF_8_CHARSET)) {
+            out.println(css);
+        } catch (FileNotFoundException |
+                UnsupportedEncodingException e) {
+            throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
+        }
+
+        Resource resource = new Resource();
+        resource.setDirectory(configDir.getAbsolutePath());
+        resource.setTargetPath(ConfigConstants.CONFIG_DIR);
+        project.addResource(resource);
+    }
+
+    /**
+     * read handlebars.js file in the resource folder.
+     *
+     * @throws MojoExecutionException
+     */
+    private String readJS() throws MojoExecutionException {
+        InputStream inputStream = ConfigDocumentMojo.class.getClassLoader().getResourceAsStream(JS_FILE);
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, UTF_8_CHARSET))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            logger.error("Error while reading the css file.", e);
+        }
+
+        return sb.toString();
+
+    }
+
+    /**
+     * copy handlebars.js file in the resource folder.
+     *
+     * @throws MojoExecutionException
+     */
+    private void copyJS(String js) throws MojoExecutionException {
+
+        File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
+
+        if (!configDir.exists() && !configDir.mkdirs()) {
+            throw new MojoExecutionException("Error while creating config directory in classpath");
+        }
+
+        try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), JS_FILE), UTF_8_CHARSET)) {
+            out.println(js);
+        } catch (FileNotFoundException |
+                UnsupportedEncodingException e) {
+            throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
+        }
+
+        Resource resource = new Resource();
+        resource.setDirectory(configDir.getAbsolutePath());
+        resource.setTargetPath(ConfigConstants.CONFIG_DIR);
+        project.addResource(resource);
+    }
+
+    /**
+     * create the YAML String from the contentMap
+     *
+     * @param contentMap configuration map
+     * @throws MojoExecutionException
+     */
+    private String getYamlString(Map<String, Object> contentMap) throws MojoExecutionException {
+        // create the yaml string from the map
+        Yaml yaml = new Yaml();
+        String content = yaml.dumpAsMap(contentMap);
+        // remove all comments key lines from the content.
+        content = content.replaceAll(COMMENT_KEY_REGEX_PATTERN, "");
+        content = content.replaceAll(POSSIBLE_VALUE_REGEX_PATTERN, "");
+        content = content.replaceAll(COMMENT_REGEX_PATTERN, "");
+        content = content.replaceAll(EMPTY_LINE_REGEX_PATTERN, "");
+
+        return content;
+    }
+
+    /**
+     * creating an object model to pass to the handlebars template
+     * using configuration map
+     *
+     * @param contentMap      configuration map
+     * @param configItemsList array list object
+     * @throws MojoExecutionException
+     */
+    private List<DataModel> generateContent(Map<String, Object> contentMap,
+                                            List<DataModel> configItemsList) throws MojoExecutionException {
+        String elementName = null;
+        String description = null;
+        String dataType = null;
+        String defaultValue = null;
+        String required = null;
+        String possibleValues = null;
+
+        for (Map.Entry<String, Object> entry : contentMap.entrySet()) {
+
+            if (entry.getKey().contains(COMMENT_KEY_PREFIX)) {
+
+                elementName = entry.getKey().replaceAll(COMMENT_KEY_PREFIX, "");
+                description = entry.getValue().toString().replaceAll(NEW_LINE_REGEX_PATTERN, "")
+                        .replaceAll("#", "")
+                        .replaceAll(MANDATORY_FIELD_COMMENT, "");
+
+                if (entry.getValue().toString().endsWith(MANDATORY_FIELD_COMMENT)) {
+                    required = MANDATORY_FIELD_ENTRY;
+                } else {
+                    required = "";
+                }
+
+            } else if (entry.getKey().contains(POSSIBLE_VALUE_PREFIX)) {
+                possibleValues = entry.getValue().toString().replaceAll(OPTIONS_FIELD_COMMENT, "")
+                        .replaceAll("#", "");
+            } else if (!(entry.getValue() instanceof LinkedHashMap)) {
+
+                if (entry.getValue() instanceof List) {
+                    dataType = entry.getValue().getClass().getSimpleName();
+                    String valueList = entry.getValue().toString().replaceAll("\\[", "").replaceAll("\\]", "");
+                    String[] values = valueList.split(",");
+                    StringBuilder sb = new StringBuilder();
+                    for (String value : values) {
+                        if (sb.length() == 0) {
+                            sb.append("<br />").append(sb).append(value);
+                        } else {
+                            sb.append("<br />").append(value);
+                        }
+                    }
+                    defaultValue = sb.toString();
+                } else if (entry.getValue() instanceof Map) {
+                    dataType = entry.getValue().getClass().getSimpleName();
+                    String valueList = entry.getValue().toString().replaceAll("\\{", "").replaceAll("\\}", "");
+                    String[] values = valueList.split(",");
+                    StringBuilder builder = new StringBuilder();
+                    for (String items : values) {
+                        if (builder.length() == 0) {
+                            builder.append("<br />").append(builder).append(items);
+                        } else {
+                            builder.append("<br />").append(items);
+                        }
+                    }
+                    defaultValue = builder.toString();
+
+                } else {
+                    dataType = entry.getValue().getClass().getSimpleName();
+                    defaultValue = entry.getValue().toString();
+                }
+
+                DataModel dataModel = new DataModel();
+                if (elementName != null) {
+                    dataModel.setElementName(elementName);
+                    dataModel.setDataType(dataType);
+                    dataModel.setDescription(description);
+                    dataModel.setDefaultValue(defaultValue);
+                    dataModel.setRequired(required);
+                    dataModel.setPossibleValues(possibleValues);
+
+                    dataType = "";
+                    defaultValue = "";
+                    possibleValues = "";
+
+                    configItemsList.add(dataModel);
+                }
+
+            } else if (entry.getValue() instanceof LinkedHashMap) {
+
+                DataModel dataModel = new DataModel();
+                if (elementName == null) {
+                    generateContent((Map<String, Object>) entry.getValue(), configItemsList);
+                } else {
+                    dataModel.setElementName(elementName);
+                    dataModel.setDataType(dataType);
+                    dataModel.setDescription(description);
+                    dataModel.setDefaultValue(defaultValue);
+                    dataModel.setRequired(required);
+                    dataModel.setPossibleValues(possibleValues);
+
+                    dataType = "";
+                    defaultValue = "";
+                    possibleValues = "";
+                    configItemsList.add(dataModel);
+
+                    generateContent((Map<String, Object>) entry.getValue(), dataModel.childElements);
+                }
+            }
+        }
+        return configItemsList;
+    }
+
+    /**
+     * generating the JSON files and
+     * write them to the class output directory
+     *
+     * @param configItems configuration list
+     * @throws MojoExecutionException, IOException
+     */
+    private void generateJSONFiles(String yamlString, String displayName,
+                                   List<DataModel> configItems, String filename) throws MojoExecutionException {
+        Gson gson = new Gson();
+        DataContext dataContext = new DataContext();
+        dataContext.setElements(configItems);
+        dataContext.setDisplayName(displayName);
+        dataContext.setYamlString(yamlString);
+        Object json = gson.toJson(dataContext);
+
+        File configDir = new File(project.getBuild().getOutputDirectory(), ConfigConstants.CONFIG_DIR);
+
+        // create config directory inside project output directory to save config files
+        if (!configDir.exists() && !configDir.mkdirs()) {
+            throw new MojoExecutionException("Error while creating config directory in classpath");
+        }
+
+        try (PrintWriter out = new PrintWriter(new File(configDir.getPath(), filename
+                + JSON_FILE_EXTENTION), UTF_8_CHARSET)) {
+            out.println(json);
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
         }
@@ -194,6 +479,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
         resource.setDirectory(configDir.getAbsolutePath());
         resource.setTargetPath(ConfigConstants.CONFIG_DIR);
         project.addResource(resource);
+
     }
 
     /**
@@ -272,7 +558,16 @@ public class ConfigDocumentMojo extends AbstractMojo {
                 Element element = field.getAnnotation(Element.class);
                 fieldDescription = createDescriptionComment(element.description());
                 if (element.required()) {
-                    fieldDescription = fieldDescription + MANDATORY_FIELD_COMMENT;
+                    fieldDescription = fieldDescription + "# " + MANDATORY_FIELD_COMMENT;
+                }
+            }
+
+            // read the possible values of the field. And create the possible value description
+            String possibleValueDescription = null;
+            if (enableDescription && field.isAnnotationPresent(Element.class)) {
+                Element element = field.getAnnotation(Element.class);
+                if (!(Arrays.asList(element.possibleValues()).contains(ConfigConstants.NOT_APPLICABLE))) {
+                    possibleValueDescription = createOptionsComment(element.possibleValues());
                 }
             }
 
@@ -330,6 +625,11 @@ public class ConfigDocumentMojo extends AbstractMojo {
             if (fieldDescription != null) {
                 elementMap.put(COMMENT_KEY_PREFIX + field.getName(), fieldDescription);
             }
+
+            // add possible values description of each field if possible values are present
+            if (possibleValueDescription != null) {
+                elementMap.put(POSSIBLE_VALUE_PREFIX + field.getName(), possibleValueDescription);
+            }
             // add field to the element map
             elementMap.put(field.getName(), fieldValue);
         }
@@ -353,6 +653,29 @@ public class ConfigDocumentMojo extends AbstractMojo {
             builder.append("# ").append(line).append("\n");
         }
         return builder.toString();
+    }
+
+    /**
+     * convert the annotated possible values to comment.
+     *
+     * @param options possible values
+     * @return comment string
+     */
+    private String createOptionsComment(String[] options) {
+        String delimiter = ",";
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sb1 = new StringBuilder();
+
+        for (String element : options) {
+            if (sb.length() > 0) {
+                sb.append(delimiter);
+            }
+            sb.append(element);
+        }
+
+        String items = sb.toString();
+        String itemsComment = sb1.append("# ").append(OPTIONS_FIELD_COMMENT).append(items).toString();
+        return itemsComment;
     }
 
     /**
@@ -387,4 +710,6 @@ public class ConfigDocumentMojo extends AbstractMojo {
             }
         }
     }
+
 }
+

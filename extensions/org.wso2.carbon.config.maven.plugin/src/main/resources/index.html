@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stream Processor Configuration</title>
+    <link rel="stylesheet" type="text/css" href="configuration.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
+    <link rel="stylesheet" href="http://codemirror.net/theme/eclipse.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet">
+</head>
+<body class="vbox viewport">
+<header style="background-color: #b21e28;">
+    <div class="navbar-header">
+        <img src="https://docs.wso2.com/download/attachments/72426209/wso2-stream-processor-config-docs-h-banner.png?api=v2">
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav"></ul>
+    </div>
+</header>
+<section class="main hbox space-between">
+    <nav id="nav-a" style="overflow-y:scroll;">
+    </nav>
+
+    <article>
+        <div id="breadcrumb-section" style="height: 5vh">
+            <ul class="breadcrumb">
+                <li><a href="https://docs.wso2.com/display/SP400/Stream+Processor+Documentation"><span
+                        style="color: black;"> / </span>WSO2 Stream Processor Documentation</a></li>
+                <li>Configuration Files Documentation</li>
+            </ul>
+        </div>
+        <div id="content" style="width: 100%; height: 79vh">
+            <!-- begin content-->
+
+            <div class="col-md-6" id="doc-content">
+                <h2> Welcome to Configuration Files Documentation of WSO2 Stream Processor</h2>
+                <h3> Introduction </h3>
+                <p> This section will explain the main Configuration Files of WSO2 Stream Processor. </p>
+                <h3> How to look for Configurations </h3>
+                <p> In the provided navigation menu, under the Components menu item you will find all the
+                    Configuration Files of WSO2 Stream Processor. </p>
+            </div>
+
+            <div class="col-md-6" id="yaml-content">
+
+            </div>
+
+            <!-- end content -->
+
+        </div>
+    </article>
+</section>
+
+
+<script id="menu-template" type="text/x-handlebars-template">
+    <ul class="nav nav-pills nav-stacked">
+        <h5 style="padding:5px;"><a href="index.html" style="text-decoration: none;">Home</a></h5>
+        <h5 style="padding:5px;">Components</h5>
+        {{#each menuLists}}
+        <li><a href='#' onclick="loadDoc('{{filename}}')">{{displayName}}</a></li>
+        {{/each}}
+
+    </ul>
+</script>
+
+<script id="content-template" type="text/x-handlebars-template">
+    <div id="nav-b" style="overflow-y:scroll; height: 79vh">
+        <table style="border-collapse: collapse; width: 100%; margin-bottom: 30px; table-layout: fixed">
+            <tbody>
+            {{#each elements}}
+            {{#if childElements}}
+            <tr>
+                <td><a href="#" class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')"
+                       style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{#each childElements}}
+            {{#if childElements}}
+            <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
+                <td ><a href="#" class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')"
+                       style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            <tr bgcolor="#C0C0C0" style="display:none" class="extra{{../elementName}}">
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{#each childElements}}
+            {{#if childElements}}
+            <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
+                <td><a href="#" class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')"
+                       style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            <tr bgcolor="#D3D3D3" style="display:none" class="extra{{../elementName}}">
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{#each childElements}}
+            {{#if childElements}}
+            <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
+                <td><a href="#" class="dropbtn elementName" onClick="toggleExtra('{{elementName}}')"
+                       style="text-decoration:none;">{{elementName}}<span class="caret"></span></a></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            <tr bgcolor="#DCDCDC" style="display:none" class="extra{{../elementName}}">
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+
+            {{else}}
+            <tr bgcolor="#DCDCDC" class="extra{{../elementName}}" style="display:none">
+                <td class="elementName">{{elementName}}</td>
+                <td><span class="datatype">{{dataType}}</span></td>
+            </tr>
+            <tr bgcolor="#DCDCDC" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            {{#if required}}
+            <tr bgcolor="#DCDCDC" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="required"> {{required}}</td>
+            </tr>
+            {{/if}}
+            <tr bgcolor="#DCDCDC" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+            </tr>
+            {{#if possibleValues}}
+            <tr bgcolor="#DCDCDC" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+            </tr>
+            {{/if}}
+            <tr bgcolor="#DCDCDC" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{/if}}
+            {{/each}}
+            {{else}}
+            <tr bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                <td class="elementName">{{elementName}}</td>
+                <td><span class="datatype">{{dataType}}</span></td>
+            </tr>
+            <tr bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            {{#if required}}
+            <tr bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="required"> {{required}}</td>
+            </tr>
+            {{/if}}
+            <tr bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+            </tr>
+            {{#if possibleValues}}
+            <tr bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+            </tr>
+            {{/if}}
+            <tr bgcolor="#D3D3D3" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{/if}}
+            {{/each}}
+            {{else}}
+            <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                <td class="elementName">{{elementName}}</td>
+                <td><span class="datatype">{{dataType}}</span></td>
+            </tr>
+            <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            {{#if required}}
+            <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="required"> {{required}}</td>
+            </tr>
+            {{/if}}
+            <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+            </tr>
+            {{#if possibleValues}}
+            <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+            </tr>
+            {{/if}}
+            <tr bgcolor="#C0C0C0" class="extra{{../elementName}}" style="display:none">
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{/if}}
+            {{/each}}
+            {{else}}
+            <tr>
+                <td class="elementName">{{elementName}}</td>
+                <td><span class="datatype">{{dataType}}</span></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="values"><b>Description:</b>{{description}}</td>
+            </tr>
+            {{#if required}}
+            <tr>
+                <td></td>
+                <td class="required"> {{required}}</td>
+            </tr>
+            {{/if}}
+            <tr>
+                <td></td>
+                <td class="values"><b>Default Value:</b> {{{defaultValue}}}</td>
+            </tr>
+            {{#if possibleValues}}
+            <tr>
+                <td></td>
+                <td class="values"><b>Possible Values:</b> {{possibleValues}}</td>
+            </tr>
+            {{/if}}
+            <tr>
+                <td></td>
+                <td>
+                    <hr/>
+                </td>
+            </tr>
+            {{/if}}
+            {{/each}}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<script id="yaml-template" type="text/x-handlebars-template">
+    <textarea rows="4" cols="50" id="codesnippet_readonly" name="codesnippet_readonly">{{yamlString}}
+    </textarea>
+</script>
+
+<footer style="background-color: #555; color: white">&copy;2017 WSO2</footer>
+
+<script src="handlebars-v4.0.11.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="http://codemirror.net/lib/codemirror.js"></script>
+<script src="http://codemirror.net/mode/yaml/yaml.js"></script>
+
+<!--<script>
+    var readOnlyCodeMirror = CodeMirror.fromTextArea(document.getElementById('codesnippet_readonly'),
+    {mode: "yaml",lineNumbers: true,theme: "eclipse",lineWrapping: true,scrollbarStyle: "native",readOnly: true});
+</script>-->
+
+<script>
+    $(document).ready(function() {
+        debugger;
+        $.getJSON("menu.json", function(json) {
+            var hbsMenuContent = Handlebars.compile($('#menu-template').html());
+            $('#nav-a').html(hbsMenuContent(json));
+        });
+    });
+
+
+
+</script>
+
+<script>
+   function loadDoc(path) {
+        debugger;
+        $.getJSON(path, function(json) {
+
+            var hbsDocContent = Handlebars.compile($('#content-template').html());
+            $('#doc-content').html(hbsDocContent(json));
+
+            var hbsYamlContent = Handlebars.compile($('#yaml-template').html());
+            $('#yaml-content').html(hbsYamlContent(json));
+
+            setTimeout(function(){
+            CodeMirror.fromTextArea(document.getElementById('codesnippet_readonly'),
+    {mode: "yaml",lineNumbers: true,theme: "eclipse",lineWrapping: true,scrollbarStyle: "native",readOnly: true})
+    },0);
+
+            });
+    }
+
+
+</script>
+
+<script>
+      function toggleExtra(key){
+       $('.extra'+key).toggle('show');
+    }
+
+
+</script>
+</body>
+</html>

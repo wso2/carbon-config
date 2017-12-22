@@ -36,6 +36,9 @@ public @interface Configuration {
     // needed only for root configuration bean
     String namespace() default ConfigConstants.NULL;
 
+    //need only for the root configuration bean. This will be the menu item from the configuration docs
+    String displayName() default ConfigConstants.NULL;
+
     // field description, required
     String description();
 }
