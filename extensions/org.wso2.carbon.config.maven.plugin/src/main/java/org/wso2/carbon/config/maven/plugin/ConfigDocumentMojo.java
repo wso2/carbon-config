@@ -474,7 +474,7 @@ public class ConfigDocumentMojo extends AbstractMojo {
             throw new MojoExecutionException("Error while creating new resource file from the classpath", e);
         }
 
-        // add configguration document to the project resources under config-docs/ directory.
+        // add configuration document to the project resources under config-docs/ directory.
         Resource resource = new Resource();
         resource.setDirectory(configDir.getAbsolutePath());
         resource.setTargetPath(ConfigConstants.CONFIG_DIR);
