@@ -23,7 +23,7 @@ package org.wso2.carbon.config;
 public final class ConfigConstants {
 
     public static final String NULL = "NULL";
-    public static final String NOT_APPLICABLE = "na";
+    public static final String NOT_APPLICABLE = "-";
     public static final String TEMP_CONFIG_FILE_NAME = "temp_config_classnames.txt";
     public static final String CONFIG_DIR = "config-docs";
     public static final String DEPLOYMENT_CONFIG_YAML = "deployment.yaml";

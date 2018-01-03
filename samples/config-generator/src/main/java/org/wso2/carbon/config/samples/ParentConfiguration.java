@@ -28,8 +28,9 @@ import java.util.Locale;
  *
  * @since 1.0.0
  */
-@Configuration(namespace = "wso2.configuration", displayName = "Parent Configurations" , description = "Parent " +
-        "configuration")
+@Configuration(namespace = "wso2.configuration", displayName = "Parent Configurations",
+        description = "Parent configuration")
+
 public class ParentConfiguration {
 
     @Element(description = "An example element for this configuration", possibleValues = {"WSO2", "MV"})
