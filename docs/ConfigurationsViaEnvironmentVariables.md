@@ -35,8 +35,8 @@ wso2.configuration:
 The above configuration can be represented with the below environment variables / system properties:
 
 ```bash
-WSO2.CONFIGURATION_COMPLEXTESTBEAN_NAME="default"
-WSO2.CONFIGURATION_COMPLEXTESTBEAN_BEAN_NAME="default"
+WSO2_CONFIGURATION__COMPLEXTESTBEAN_NAME="default"
+WSO2_CONFIGURATION__COMPLEXTESTBEAN_BEAN_NAME="default"
 ```
 
 Where,

@@ -56,6 +56,9 @@ import javax.lang.model.SourceVersion;
 public class ConfigProviderImpl implements ConfigProvider {
     private static final Logger logger = LoggerFactory.getLogger(ConfigProviderImpl.class.getName());
     private static final String CONFIG_LEVEL_SEPARATOR = "_";
+    private static final String NAMESPACE_LEVEL_SEPERATOR = "__";
+    private static final String CONFIG_NAMESPACE_WORD_SEPERATOR = ".";
+
     private static final int CONFIG_MIN_ELEMENT_COUNT = 2;
     private static final String[] UNIQUE_ATTRIBUTE_NAMES = {"ID", "NAME"};
     private static final String UNIQUE_ATTRIBUTE_SPECIFIER = "UNIQUE";
@@ -186,16 +189,24 @@ public class ConfigProviderImpl implements ConfigProvider {
         // Filter 2: Check if the key format is correct
         // Filter 3: Check if the configuration is not empty
         // Filter 4: Ignore unique identification specifiers
-        return variables.entrySet().stream()
-                .filter(entry -> entry.getKey().toUpperCase()
-                        .startsWith(namespace.toUpperCase() + CONFIG_LEVEL_SEPARATOR))
-                .filter(entry -> (entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)
-                                          .length == CONFIG_MIN_ELEMENT_COUNT))
-                .filter(entry -> (!entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
-                                          .trim().isEmpty()))
-                .filter(entry -> (!entry.getKey().split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1]
-                        .toUpperCase().endsWith(UNIQUE_ATTRIBUTE_SPECIFIER.toUpperCase())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, HashMap::new));
+        HashMap<String, String> filteredVariableMap = new HashMap<>();
+        variables.entrySet().forEach((Map.Entry<String, String> entry) -> {
+            String environmentVariableNameSpacePart = namespace.toUpperCase().replace
+                    (CONFIG_NAMESPACE_WORD_SEPERATOR, CONFIG_LEVEL_SEPARATOR) + NAMESPACE_LEVEL_SEPERATOR;
+            if (entry.getKey().toUpperCase().startsWith(environmentVariableNameSpacePart)) {
+                String[] splicedEnvironmentVariableParts = entry.getKey().split(environmentVariableNameSpacePart,
+                        CONFIG_MIN_ELEMENT_COUNT);
+                if (splicedEnvironmentVariableParts.length == CONFIG_MIN_ELEMENT_COUNT) {
+                    if ((!splicedEnvironmentVariableParts[1].trim().isEmpty())) {
+                        if ((!splicedEnvironmentVariableParts[1].toUpperCase().endsWith(UNIQUE_ATTRIBUTE_SPECIFIER
+                                .toUpperCase()))) {
+                            filteredVariableMap.putIfAbsent(entry.getKey(), entry.getValue());
+                        }
+                    }
+                }
+            }
+        });
+        return filteredVariableMap;
     }
 
     /**
@@ -239,13 +250,14 @@ public class ConfigProviderImpl implements ConfigProvider {
 
         for (Map.Entry<String, String> entry : systemVariables.entrySet()) {
             String systemVarKey = entry.getKey();
-            String configKey = systemVarKey.split(CONFIG_LEVEL_SEPARATOR, CONFIG_MIN_ELEMENT_COUNT)[1];
+            String environmentVariableNameSpacePart = namespace.toUpperCase(Locale.ENGLISH).replace
+                    (CONFIG_NAMESPACE_WORD_SEPERATOR, CONFIG_LEVEL_SEPARATOR) + NAMESPACE_LEVEL_SEPERATOR;
+            String configKey = systemVarKey.split(environmentVariableNameSpacePart)[1];
             String value = entry.getValue();
 
             List<String> configKeyElements = new ArrayList<>(Arrays.asList(configKey.split(CONFIG_LEVEL_SEPARATOR)));
             overrideConfigWithSystemVariable(configClass, null, configKeyElements, value, systemVarKey);
-        }
-        return configClass;
+        } return configClass;
     }
 
     /**
