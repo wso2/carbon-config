@@ -411,7 +411,9 @@ public class ConfigProviderImplTest {
                 "envconfigoverride.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
         TestConfiguration configurations = configProvider.getConfigurationObject(TestConfiguration.class);
+        TestConfiguration testConfig = configProvider.getConfigurationObject(CONFIG_NAMESPACE, TestConfiguration.class);
         Assert.assertEquals(configurations.getTenant(), newTenantName);
+        Assert.assertEquals(testConfig.getTenant(), newTenantName);
         EnvironmentUtils.unsetEnvironmentVariables(envVariable);
     }
 

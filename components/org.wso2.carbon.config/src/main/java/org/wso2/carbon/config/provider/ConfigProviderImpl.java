@@ -167,7 +167,8 @@ public class ConfigProviderImpl implements ConfigProvider {
             String configString = deploymentConfigs.get(namespace);
             String processedString = processPlaceholder(configString);
             processedString = ConfigurationUtils.substituteVariables(processedString);
-            return getConfigurationObject(configClass, configClass.getClassLoader(), processedString);
+            return overrideConfigWithSystemVars(namespace, getConfigurationObject(configClass,
+                    configClass.getClassLoader(), processedString));
         }
         // Get the configuration from bean annotation.
         return getConfigurationObject(configClass);
