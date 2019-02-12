@@ -39,7 +39,7 @@ public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
     private static final Pattern varPattern = Pattern.compile("\\$\\{([^}]*)}");
     private static final char[] specialCharArray = new char[]{'\\', '+', '-', '!', '(', ')', ':', '^', '[', ']',
-            '\"', '{', '}', '~', '*', '?', '|', '&', ';', '/'};
+            '\"', '{', '}', '~', '*', '?', '|', '&', ';', '/', '$', '%'};
 
     private ConfigurationUtils() {
     }

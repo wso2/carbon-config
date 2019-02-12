@@ -115,8 +115,8 @@ public class UtilsTest {
 
     @DataProvider(name = "params")
     public Object[][] createParamValues() {
-        return new Object[][]{{"C:\\Software\\WSO2*Kernal-5.0.0\\wso2\\worker\\bin",
-                "C\\:\\\\Software\\\\WSO2\\*Kernal\\-5.0.0\\\\wso2\\\\worker\\\\bin"},
+        return new Object[][]{{"C:\\Software\\WSO2*Kernal-5.0.0\\ws$o2\\wor%ker\\bin",
+                "C\\:\\\\Software\\\\WSO2\\*Kernal\\-5.0.0\\\\ws\\$o2\\\\wor\\%ker\\\\bin"},
                 {null, null}};
     }
 
