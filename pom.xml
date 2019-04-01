@@ -217,7 +217,7 @@
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>
-        <org.snakeyaml.version>1.17</org.snakeyaml.version>
+        <org.snakeyaml.version>1.23</org.snakeyaml.version>
         <commons.io.version>2.4.0.wso2v1</commons.io.version>
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
         <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
