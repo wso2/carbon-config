@@ -130,6 +130,11 @@
                 <artifactId>maven-core</artifactId>
                 <version>${maven.core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.spullara.mustache.java</groupId>
+                <artifactId>compiler</artifactId>
+                <version>${com.mustache.java.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
@@ -204,6 +209,7 @@
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <osgi.framework.package.import.version.range>[1.8.0, 2.0.0)</osgi.framework.package.import.version.range>
         <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
+        <com.mustache.java.version.range>[0.9.6,1.0.0)</com.mustache.java.version.range>
 
         <!-- Carbon Secure Vault version -->
         <carbon.config.version>2.1.10-SNAPSHOT</carbon.config.version>
@@ -225,6 +231,7 @@
         <easy.mock.version>3.4</easy.mock.version>
         <org.jacoco.ant.version>0.7.5.201505241946</org.jacoco.ant.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
+        <com.mustache.java.version>0.9.6</com.mustache.java.version>
 
         <!-- Maven plugin versions -->
         <maven.project.version>2.2.1</maven.project.version>
