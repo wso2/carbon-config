@@ -21,10 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.config.ConfigurationException;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,13 +65,39 @@ public abstract class ConfigFileReader {
             log.error(message);
             throw new ConfigurationException(message);
         }
-        try {
-            byte[] contentBytes = Files.readAllBytes(configurationFilePath);
-            return new String(contentBytes, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            String message = "Error while reading configuration file";
-            log.error(message, e);
-            throw new ConfigurationException(message, e);
+
+        String customDeploymentFilePath = System.getProperty("config");
+        Path customConfigPath = null;
+        if (customDeploymentFilePath != null && (!customDeploymentFilePath.trim().isEmpty())) {
+            File customDeploymentFile = new File(customDeploymentFilePath);
+            if (customDeploymentFile.isFile()) {
+                customConfigPath = customDeploymentFile.toPath();
+                log.info("Default deployment configuration updated with provided custom configuration file " +
+                        customDeploymentFile.getName());
+            }
+        }
+
+        if (customConfigPath != null) {
+            List<Path> configPathList = new ArrayList<>();
+            configPathList.add(configurationFilePath);
+            configPathList.add(customConfigPath);
+            try {
+                return new YmlMerger().mergeToString(configPathList);
+            } catch (IOException e) {
+                String message = "Error occurred while overriding the default deployment configuration with provided" +
+                        "custom configuration file " + customConfigPath.getFileName();
+                log.error(message);
+                throw new ConfigurationException(message, e);
+            }
+        } else {
+            try {
+                byte[] contentBytes = Files.readAllBytes(configurationFilePath);
+                return new String(contentBytes, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                String message = "Error while reading configuration file";
+                log.error(message, e);
+                throw new ConfigurationException(message, e);
+            }
         }
     }
 
