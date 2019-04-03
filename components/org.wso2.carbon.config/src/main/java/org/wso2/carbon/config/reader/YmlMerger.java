@@ -24,23 +24,18 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-class YmlMerger {
+/**
+ *
+ */
+public class YmlMerger {
 
     private static final Logger LOG = LoggerFactory.getLogger(YmlMerger.class);
     private static final DefaultMustacheFactory DEFAULT_MUSTACHE_FACTORY = new DefaultMustacheFactory();
@@ -48,7 +43,7 @@ class YmlMerger {
     private final Yaml snakeYaml;
     private Map<String, Object> variablesToReplace = new HashMap<String, Object>();
 
-    YmlMerger() {
+    public YmlMerger() {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         dumperOptions.setPrettyFlow(true);
@@ -57,43 +52,31 @@ class YmlMerger {
         this.snakeYaml = new Yaml(dumperOptions);
     }
 
+    public YmlMerger setVariablesToReplace(Map<String, String> vars) {
+        this.variablesToReplace.clear();
+        this.variablesToReplace.putAll(vars);
+        return this;
+    }
+
     /**
      * Merges the files at given paths to a map representing the resulting YAML structure.
      */
     @SuppressWarnings("unchecked")
-    private Map<String, Object> mergeYamlFiles(List<Path> paths) throws IOException {
+    private Map<String, Object> mergeYamlContents(List<String> contents) {
         Map<String, Object> mergedResult = new LinkedHashMap<String, Object>();
-        for (Path yamlFilePath : paths) {
-            InputStream in = null;
-            try {
-                File file = yamlFilePath.toFile();
-                if (!file.exists()) {
-                    throw new FileNotFoundException("YAML file to merge not found: " + file.getCanonicalPath());
-                }
+        for (String yamlContent : contents) {
+            // Substitute variables.
+            int bufferSize = yamlContent.length() + 100;
+            final StringWriter writer = new StringWriter(bufferSize);
+            DEFAULT_MUSTACHE_FACTORY.compile(new StringReader(yamlContent), "yaml-mergeYamlFiles-" +
+                    System.currentTimeMillis()).execute(writer, variablesToReplace);
 
-                // Read the YAML file into a String
-                in = new FileInputStream(file);
+            // Parse the YAML.
+            String yamlString = writer.toString();
+            final Map<String, Object> yamlToMerge = (Map<String, Object>) this.snakeYaml.load(yamlString);
 
-                final String entireFile = getStringContentFromInputStream(in);
-
-                // Substitute variables.
-                int bufferSize = entireFile.length() + 100;
-                final StringWriter writer = new StringWriter(bufferSize);
-                DEFAULT_MUSTACHE_FACTORY.compile(new StringReader(entireFile), "yaml-mergeYamlFiles-" +
-                        System.currentTimeMillis()).execute(writer, variablesToReplace);
-
-                // Parse the YAML.
-                String yamlString = writer.toString();
-                final Map<String, Object> yamlToMerge = (Map<String, Object>) this.snakeYaml.load(yamlString);
-
-                // Merge into results map.
-                mergeStructures(mergedResult, yamlToMerge);
-                LOG.debug("Loaded YAML from " + yamlFilePath + ": " + yamlToMerge);
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-            }
+            // Merge into results map.
+            mergeStructures(mergedResult, yamlToMerge);
         }
         return mergedResult;
     }
@@ -125,7 +108,6 @@ class YmlMerger {
                     }
                 } else if (yamlValue instanceof List) {
                     mergeLists(targetTree, key, yamlValue);
-
                 } else if (yamlValue instanceof String
                         || yamlValue instanceof Boolean
                         || yamlValue instanceof Double
@@ -176,34 +158,12 @@ class YmlMerger {
     }
 
 
-    String mergeToString(List<Path> filesToMerge) throws IOException {
-        Map<String, Object> merged = mergeYamlFiles(filesToMerge);
+    String mergeToString(List<String> contentToMerge) {
+        Map<String, Object> merged = mergeYamlContents(contentToMerge);
         return exportToString(merged);
     }
 
     private String exportToString(Map<String, Object> merged) {
         return snakeYaml.dump(merged);
-    }
-
-    private String getStringContentFromInputStream(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = null;
-        StringBuilder inputSB = new StringBuilder();
-        try {
-            bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-            String line = bufferedReader.readLine();
-            while (line != null) {
-                inputSB.append(line);
-                line = bufferedReader.readLine();
-                if (line != null) {
-                    // add new line character
-                    inputSB.append("\n");
-                }
-            }
-        } finally {
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
-        }
-        return inputSB.toString();
     }
 }

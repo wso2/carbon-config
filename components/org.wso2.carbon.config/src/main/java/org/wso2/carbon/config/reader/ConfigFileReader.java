@@ -21,8 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.config.ConfigurationException;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,27 +69,29 @@ public abstract class ConfigFileReader {
             log.error(message);
             throw new ConfigurationException(message);
         }
-
-        String customDeploymentFilePath = System.getProperty("config");
-        Path customConfigPath = null;
-        if (customDeploymentFilePath != null && (!customDeploymentFilePath.trim().isEmpty())) {
-            File customDeploymentFile = new File(customDeploymentFilePath);
-            if (customDeploymentFile.isFile()) {
-                customConfigPath = customDeploymentFile.toPath();
-                log.info("Default deployment configuration updated with provided custom configuration file " +
-                        customDeploymentFile.getName());
-            }
-        }
-
-        if (customConfigPath != null) {
-            List<Path> configPathList = new ArrayList<>();
-            configPathList.add(configurationFilePath);
-            configPathList.add(customConfigPath);
+        String customConfig = System.getProperty("config");
+        String customConfigContent;
+        if (customConfig != null && (!customConfig.trim().isEmpty())) {
             try {
-                return new YmlMerger().mergeToString(configPathList);
+                File customDeploymentFile = new File(customConfig);
+                if (customDeploymentFile.isFile()) {
+                    log.info("Default deployment configuration updated with provided custom configuration file " +
+                            customDeploymentFile.getName());
+                    customConfigContent = getStringContentFromFile(customDeploymentFile);
+                } else {
+                    customConfigContent = customConfig;
+                }
+                List<String> configContentList = new ArrayList<>();
+                File defaultConfigFile = new File(configurationFilePath.toString());
+                String defaultConfigContent = getStringContentFromFile(defaultConfigFile);
+                configContentList.add(defaultConfigContent);
+                configContentList.add(customConfigContent);
+                YmlMerger ymlMerger = new YmlMerger();
+                ymlMerger.setVariablesToReplace(System.getenv());
+               return ymlMerger.mergeToString(configContentList);
             } catch (IOException e) {
                 String message = "Error occurred while overriding the default deployment configuration with provided" +
-                        "custom configuration file " + customConfigPath.getFileName();
+                        "custom configuration file";
                 log.error(message);
                 throw new ConfigurationException(message, e);
             }
@@ -99,6 +105,33 @@ public abstract class ConfigFileReader {
                 throw new ConfigurationException(message, e);
             }
         }
+    }
+
+    private String getStringContentFromFile(File inputFile) throws IOException {
+        InputStream inputStream = null;
+        BufferedReader bufferedReader = null;
+        StringBuilder inputSB = new StringBuilder();
+        try {
+            inputStream = new FileInputStream(inputFile);
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+            String line = bufferedReader.readLine();
+            while (line != null) {
+                inputSB.append(line);
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    // add new line character
+                    inputSB.append("\n");
+                }
+            }
+        } finally {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+        return inputSB.toString();
     }
 
     /**
