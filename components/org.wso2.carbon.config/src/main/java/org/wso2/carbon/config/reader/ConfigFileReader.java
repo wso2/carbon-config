@@ -91,7 +91,7 @@ public abstract class ConfigFileReader {
                return ymlMerger.mergeToString(configContentList);
             } catch (IOException e) {
                 String message = "Error occurred while overriding the default deployment configuration with provided" +
-                        "custom configuration file";
+                        "custom configurations.";
                 log.error(message);
                 throw new ConfigurationException(message, e);
             }
