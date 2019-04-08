@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 /**
- *
+ * Merge multiple YML files into a single file, and substitute for any environment variables found.
  */
 public class YmlMerger {
 
