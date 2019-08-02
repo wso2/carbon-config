@@ -17,7 +17,9 @@ package org.wso2.carbon.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +61,15 @@ public class ConfigurationUtils {
 
         map.entrySet().stream()
                 .filter(entry -> entry.getValue() != null)
-                .forEach(entry -> deploymentConfigs.put(entry.getKey(), yaml.dumpAsMap(entry.getValue())));
+                .forEach((entry) -> {
+                    String yamlValue;
+                    if (entry.getValue() instanceof Map) {
+                        yamlValue = yaml.dumpAsMap(entry.getValue());
+                    } else {
+                        yamlValue = yaml.dumpAs(entry.getValue(), Tag.SEQ, DumperOptions.FlowStyle.BLOCK);
+                    }
+                    deploymentConfigs.put(entry.getKey(), yamlValue);
+                });
         return deploymentConfigs;
     }
 

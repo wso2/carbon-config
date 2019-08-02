@@ -788,6 +788,39 @@ public class ConfigProviderImplTest {
         EnvironmentUtils.unsetEnvironmentVariables(envVariable);
     }
 
+    @Test(description = "This test will test functionality of namespace root level list objects")
+    public void configObjectWithConstructorTestCase() throws ConfigurationException {
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "Example2.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+
+        ArrayList<HashMap> testTransports =
+                                        ((ArrayList<HashMap>) configProvider.getConfigurationObject("testTransports2"));
+
+        Assert.assertEquals(testTransports.size(), 3);
+
+        HashMap<String, Object> testTransport1 = ((HashMap<String, Object>) testTransports.get(0).get("testTransport"));
+        Assert.assertEquals(testTransport1.get("name"), "abc");
+        Assert.assertEquals(testTransport1.get("port"), 9090);
+        Assert.assertEquals(testTransport1.get("secure"), true);
+        Assert.assertEquals(testTransport1.get("desc"), "This transport will use 8000 as its port");
+        Assert.assertEquals(testTransport1.get("password"), PASSWORD);
+
+        //Transport 2
+        HashMap<String, Object> testTransport2 = ((HashMap<String, Object>) testTransports.get(1).get("testTransport"));
+        Assert.assertEquals(testTransport2.get("name"), "pqrs");
+        Assert.assertEquals(testTransport2.get("port"), 8501);
+        Assert.assertEquals(testTransport2.get("secure"), true);
+        Assert.assertEquals(testTransport2.get("desc"), "This transport will use 8501 as its port. Secure - true");
+
+        //Transport 3
+        HashMap<String, Object> testTransport3 = ((HashMap<String, Object>) testTransports.get(2).get("testTransport"));
+        Assert.assertEquals(testTransport3.get("name"), "xyz");
+        Assert.assertEquals(testTransport3.get("port"), 9000);
+        Assert.assertEquals(testTransport3.get("secure"), true);
+        Assert.assertEquals(testTransport3.get("desc"), "This transport will use 8888 as its port");
+    }
+
     /**
      * Set environmental variables.
      */
