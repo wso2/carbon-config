@@ -795,7 +795,7 @@ public class ConfigProviderImplTest {
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
 
         ArrayList<HashMap> testTransports =
-                                        ((ArrayList<HashMap>) configProvider.getConfigurationObject("testTransports2"));
+                                        ((ArrayList<HashMap>) configProvider.getConfigurationObject("testTransports"));
 
         Assert.assertEquals(testTransports.size(), 3);
 
