@@ -174,6 +174,40 @@ public class ConfigProviderImpl implements ConfigProvider {
         return getConfigurationObject(configClass);
     }
 
+    @Override
+    public <T> ArrayList<T> getConfigurationObjectList(String namespace, Class<T> configClass)
+                                                                                    throws ConfigurationException {
+
+        // lazy loading deployment.yaml configuration, if it is not exists
+        loadDeploymentConfiguration(configFileReader);
+        // check for json configuration from deployment configs of namespace.
+        if (deploymentConfigs.containsKey(namespace)) {
+            String configString = deploymentConfigs.get(namespace);
+            String processedString = processPlaceholder(configString);
+            processedString = ConfigurationUtils.substituteVariables(processedString);
+            Object loadedConfigList = new Yaml().load(processedString);
+            if (loadedConfigList instanceof List) {
+                ArrayList<T> configList = new ArrayList<>();
+                for (Object config : ((List) loadedConfigList)) {
+                    String configYaml = new Yaml().dump(config);
+                    Yaml yaml = new Yaml(new CustomClassLoaderConstructor(configClass, configClass.getClassLoader()));
+                    yaml.setBeanAccess(BeanAccess.FIELD);
+                    T object = yaml.loadAs(configYaml, configClass);
+                    configList.add(object);
+                }
+                return configList;
+            } else {
+             throw new ConfigurationException("Configuration under namespace '" + namespace + "' is expected to be a " +
+                     "list of type '" + configClass.getSimpleName() + "' but found map.");
+            }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("configuration doesn't exist for the namespace: {} in deployment yaml   . Hence " +
+                    "return empty list of type", namespace);
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * Returns a map of variables which are prefixed with the given namespace. A hash map will always be returned
      * even if no variables are found which are prefixed with the given namespace.
