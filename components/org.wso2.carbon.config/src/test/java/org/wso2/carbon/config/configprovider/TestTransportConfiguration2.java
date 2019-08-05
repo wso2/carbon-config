@@ -70,16 +70,16 @@ class TestTransport {
 
     public String name = "default transport";
     public int port = 8000;
-    public String secure = "false";
+    public boolean secure = false;
     public String desc = "Default Transport Configurations";
     public String password = "zzz";
 
     @XmlAttribute
-    public void setSecure(String secure) {
+    public void setSecure(boolean secure) {
         this.secure = secure;
     }
 
-    public String isSecure() {
+    public boolean isSecure() {
         return secure;
     }
 

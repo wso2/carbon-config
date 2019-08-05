@@ -789,7 +789,7 @@ public class ConfigProviderImplTest {
     }
 
     @Test(description = "This test will test functionality of namespace root level list objects")
-    public void configObjectWithConstructorTestCase() throws ConfigurationException {
+    public void configObjectWithList() throws ConfigurationException {
         ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
                 "Example2.yaml").get());
         ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
@@ -820,6 +820,40 @@ public class ConfigProviderImplTest {
         Assert.assertEquals(testTransport3.get("secure"), true);
         Assert.assertEquals(testTransport3.get("desc"), "This transport will use 8888 as its port");
     }
+
+    @Test(description = "This test will test functionality of getConfigurationObjectList()")
+    public void configObjectList() throws ConfigurationException {
+        ConfigFileReader fileReader = new YAMLBasedConfigFileReader(TestUtils.getResourcePath("conf",
+                "Example2.yaml").get());
+        ConfigProvider configProvider = new ConfigProviderImpl(fileReader, secureVault);
+
+        List<TestTransportElement> testTransports =
+                            configProvider.getConfigurationObjectList("testTransports", TestTransportElement.class);
+
+        Assert.assertEquals(testTransports.size(), 3);
+
+        Assert.assertEquals(testTransports.get(0).getTestTransport().getName(), "abc");
+        Assert.assertEquals(testTransports.get(0).getTestTransport().getPort(), 9090);
+        Assert.assertEquals(testTransports.get(0).getTestTransport().isSecure(), true);
+        Assert.assertEquals(testTransports.get(0).getTestTransport().getDesc(),
+                                                        "This transport will use 8000 as its port");
+        Assert.assertEquals(testTransports.get(0).getTestTransport().getPassword(), PASSWORD);
+
+        //Transport 2
+        Assert.assertEquals(testTransports.get(1).getTestTransport().getName(), "pqrs");
+        Assert.assertEquals(testTransports.get(1).getTestTransport().getPort(), 8501);
+        Assert.assertEquals(testTransports.get(1).getTestTransport().isSecure(), true);
+        Assert.assertEquals(testTransports.get(1).getTestTransport().getDesc(),
+                                                        "This transport will use 8501 as its port. Secure - true");
+
+        //Transport 3
+        Assert.assertEquals(testTransports.get(2).getTestTransport().getName(), "xyz");
+        Assert.assertEquals(testTransports.get(2).getTestTransport().getPort(), 9000);
+        Assert.assertEquals(testTransports.get(2).getTestTransport().isSecure(), true);
+        Assert.assertEquals(testTransports.get(2).getTestTransport().getDesc(),
+                                                            "This transport will use 8888 as its port");
+    }
+
 
     /**
      * Set environmental variables.
