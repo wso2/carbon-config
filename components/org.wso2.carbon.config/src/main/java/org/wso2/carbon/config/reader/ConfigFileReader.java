@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,18 @@ public abstract class ConfigFileReader {
         String customConfigContent;
         if (customConfig != null && (!customConfig.trim().isEmpty())) {
             try {
+                // Change relative paths to absolute
+                Path customConfigGivenPath = Paths.get(customConfig);
+                if (!customConfigGivenPath.isAbsolute()) {
+                    if (System.getProperty("currentDirectory") != null) {
+                        Path currentWorkingDirectory = Paths.get(
+                                System.getProperty("currentDirectory")
+                        ).toAbsolutePath();
+                        customConfig = currentWorkingDirectory.resolve(
+                                customConfigGivenPath.toString()
+                        ).normalize().toString();
+                    }
+                }
                 File customDeploymentFile = new File(customConfig);
                 if (customDeploymentFile.isFile()) {
                     log.info("Default deployment configuration updated with provided custom configuration file " +
