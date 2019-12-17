@@ -19,6 +19,7 @@ package org.wso2.carbon.config.reader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.config.ConfigConstants;
 import org.wso2.carbon.config.ConfigurationException;
 
 import java.io.BufferedReader;
@@ -77,9 +78,9 @@ public abstract class ConfigFileReader {
                 // Change relative paths to absolute
                 Path customConfigGivenPath = Paths.get(customConfig);
                 if (!customConfigGivenPath.isAbsolute()) {
-                    if (System.getProperty("currentDirectory") != null) {
+                    if (System.getProperty(ConfigConstants.CURRENT_DIRECTORY) != null) {
                         Path currentWorkingDirectory = Paths.get(
-                                System.getProperty("currentDirectory")
+                                System.getProperty(ConfigConstants.CURRENT_DIRECTORY)
                         ).toAbsolutePath();
                         customConfig = currentWorkingDirectory.resolve(
                                 customConfigGivenPath.toString()
