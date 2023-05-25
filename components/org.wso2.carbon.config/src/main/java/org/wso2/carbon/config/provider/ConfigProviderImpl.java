@@ -25,6 +25,7 @@ import org.wso2.carbon.config.annotation.Configuration;
 import org.wso2.carbon.config.reader.ConfigFileReader;
 import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -534,7 +535,7 @@ public class ConfigProviderImpl implements ConfigProvider {
      * @return configuration object for the given YAML string
      */
     private <T> T getConfigurationObject(Class<T> configClass, ClassLoader classLoader, String yamlString) {
-        Yaml yaml = new Yaml(new CustomClassLoaderConstructor(configClass, classLoader));
+        Yaml yaml = new Yaml(new CustomClassLoaderConstructor(configClass, classLoader, new LoaderOptions()));
         yaml.setBeanAccess(BeanAccess.FIELD);
         return yaml.loadAs(yamlString, configClass);
     }
