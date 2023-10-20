@@ -191,7 +191,8 @@ public class ConfigProviderImpl implements ConfigProvider {
                 ArrayList<T> configList = new ArrayList<>();
                 for (Object config : ((List) loadedConfigList)) {
                     String configYaml = new Yaml().dump(config);
-                    Yaml yaml = new Yaml(new CustomClassLoaderConstructor(configClass, configClass.getClassLoader(), new LoaderOptions()));
+                    Yaml yaml = new Yaml(new CustomClassLoaderConstructor(configClass, configClass.getClassLoader(),
+                            new LoaderOptions()));
                     yaml.setBeanAccess(BeanAccess.FIELD);
                     T object = yaml.loadAs(configYaml, configClass);
                     configList.add(object);
