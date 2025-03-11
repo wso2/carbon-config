@@ -228,15 +228,15 @@ public class ConfigProviderImpl implements ConfigProvider {
         // Filter 4: Ignore unique identification specifiers
         HashMap<String, String> filteredVariableMap = new HashMap<>();
         variables.entrySet().forEach((Map.Entry<String, String> entry) -> {
-            String environmentVariableNameSpacePart = namespace.toUpperCase().replace
+            String environmentVariableNameSpacePart = namespace.toUpperCase(Locale.ROOT).replace
                     (CONFIG_NAMESPACE_WORD_SEPERATOR, CONFIG_LEVEL_SEPARATOR) + NAMESPACE_LEVEL_SEPERATOR;
-            if (entry.getKey().toUpperCase().startsWith(environmentVariableNameSpacePart)) {
+            if (entry.getKey().toUpperCase(Locale.ROOT).startsWith(environmentVariableNameSpacePart)) {
                 String[] splicedEnvironmentVariableParts = entry.getKey().split(environmentVariableNameSpacePart,
                         CONFIG_MIN_ELEMENT_COUNT);
                 if (splicedEnvironmentVariableParts.length == CONFIG_MIN_ELEMENT_COUNT) {
                     if ((!splicedEnvironmentVariableParts[1].trim().isEmpty())) {
-                        if ((!splicedEnvironmentVariableParts[1].toUpperCase().endsWith(UNIQUE_ATTRIBUTE_SPECIFIER
-                                .toUpperCase()))) {
+                        if ((!splicedEnvironmentVariableParts[1].toUpperCase(Locale.ROOT)
+                                .endsWith(UNIQUE_ATTRIBUTE_SPECIFIER.toUpperCase(Locale.ROOT)))) {
                             filteredVariableMap.putIfAbsent(entry.getKey(), entry.getValue());
                         }
                     }
