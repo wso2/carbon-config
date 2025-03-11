@@ -240,5 +240,6 @@
         <maven.core.version>3.3.9</maven.core.version>
         <maven.plugin.plugin.version>3.5</maven.plugin.plugin.version>
         <carbon.feature.plugin.version>3.1.0</carbon.feature.plugin.version>
+        <surefire.plugin.version>2.20</surefire.plugin.version>
     </properties>
 </project>
