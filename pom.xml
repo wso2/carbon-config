@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
-        <version>5</version>
+        <version>5.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.config</groupId>
@@ -190,6 +190,28 @@
                     <artifactId>carbon-feature-plugin</artifactId>
                     <version>${carbon.feature.plugin.version}</version>
                 </plugin>
+                <plugin><!-- Overridden from parent pom to exclude generated sources -->
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <configuration combine.self="override">
+                        <effort>Max</effort>
+                        <threshold>Low</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <spotbugsXmlOutputDirectory>${project.build.directory}/findbugs
+                        </spotbugsXmlOutputDirectory>
+                        <excludeFilterFile>${maven.findbugsplugin.version.exclude}</excludeFilterFile>
+                        <!--Exclude generated sources-->
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>analyze-compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -240,5 +262,6 @@
         <maven.core.version>3.3.9</maven.core.version>
         <maven.plugin.plugin.version>3.5</maven.plugin.plugin.version>
         <carbon.feature.plugin.version>3.1.0</carbon.feature.plugin.version>
+        <maven.findbugsplugin.version.exclude>findbugs-exclude.xml</maven.findbugsplugin.version.exclude>
     </properties>
 </project>
